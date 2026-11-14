@@ -5,6 +5,8 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import OnboardingModal from "@/components/auth/OnboardingModal";
 import { useApp } from "@/context/AppContext";
+import { getSupabaseClient } from "@/lib/supabase";
+import { insertLesson, getLessonsByCreator, getWalletTransactions, getWallet } from "@/lib/db";
 import type { Campus, Faculty, Tier } from "@/context/AppContext";
 
 const FACULTIES: Faculty[] = [
@@ -27,29 +29,40 @@ function formatDate(iso: string) {
 }
 
 export default function CreatorPage() {
-  const { walletTransactions, creatorLessons, uploadLesson, getTutorWalletBalance, getPlatformRevenue, lessons, currentUser } = useApp();
+  const { walletTransactions, creatorLessons, uploadLesson, getTutorWalletBalance, getPlatformRevenue, lessons, currentUser, supabaseUserId } = useApp();
 
-  // ── Form state
-  const [title, setTitle] = useState("");
-  const [courseCode, setCourseCode] = useState("");
-  const [faculty, setFaculty] = useState<Faculty>("Software Engineering");
-  const [campus, setCampus] = useState<Campus>("masoro");
-  const [videoUrl, setVideoUrl] = useState("");
-  const [description, setDescription] = useState("");
+  const [title, setTitle]               = useState("");
+  const [courseCode, setCourseCode]     = useState("");
+  const [faculty, setFaculty]           = useState<Faculty>("Software Engineering");
+  const [campus, setCampus]             = useState<Campus>("masoro");
+  const [videoUrl, setVideoUrl]         = useState("");
+  const [description, setDescription]   = useState("");
   const [selectedTiers, setSelectedTiers] = useState<Tier[]>(["recorded"]);
-  const [toast, setToast] = useState("");
+  const [toast, setToast]               = useState("");
   const [showOnboarding, setShowOnboarding] = useState(false);
 
-  const walletBalance = getTutorWalletBalance(MOCK_TUTOR_ID);
+  // Supabase-backed wallet data (fallback to context if no session)
+  const [sbBalance, setSbBalance]       = useState<number | null>(null);
+  const [sbTxns, setSbTxns]             = useState<import("@/lib/db").WalletTxWithLesson[] | null>(null);
+  const [sbLessons, setSbLessons]       = useState<import("@/lib/db").LessonRow[] | null>(null);
+
+  // Fetch Supabase data once session is known
+  useState(() => {
+    if (!supabaseUserId) return;
+    const sb = getSupabaseClient();
+    getWallet(sb, supabaseUserId).then((w) => { if (w) setSbBalance(w.balance_rwf); }).catch(() => {});
+    getWalletTransactions(sb, supabaseUserId).then((t) => setSbTxns(t)).catch(() => {});
+    getLessonsByCreator(sb, supabaseUserId).then((l) => setSbLessons(l)).catch(() => {});
+  });
+
+  const walletBalance  = sbBalance ?? getTutorWalletBalance(MOCK_TUTOR_ID);
   const platformRevenue = getPlatformRevenue();
+  const myTransactions = sbTxns ?? walletTransactions.filter((t) => t.tutorId === MOCK_TUTOR_ID);
+  const displayedLessons = sbLessons ?? null;
 
-  const myTransactions = walletTransactions.filter((t) => t.tutorId === MOCK_TUTOR_ID);
+  const toggleTier = (t: Tier) => setSelectedTiers((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
 
-  const toggleTier = (t: Tier) => {
-    setSelectedTiers((prev) => prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser.isOnboarded) { setShowOnboarding(true); return; }
     if (!title.trim() || !courseCode.trim() || !videoUrl.trim()) {
@@ -57,7 +70,28 @@ export default function CreatorPage() {
       setTimeout(() => setToast(""), 3000);
       return;
     }
-    uploadLesson({ title, courseCode, faculty, campus, videoUrl, description, tiers: selectedTiers, tutorId: MOCK_TUTOR_ID });
+
+    // Write to Supabase if session exists
+    if (supabaseUserId) {
+      try {
+        const sb = getSupabaseClient();
+        const inserted = await insertLesson(sb, {
+          title: title.trim(),
+          course_code: courseCode.trim().toUpperCase(),
+          faculty,
+          campus: campus === "both" ? "both" : campus,
+          description: description.trim(),
+          video_url: videoUrl.trim(),
+          creator_id: supabaseUserId,
+        });
+        setSbLessons((prev) => [inserted as typeof sbLessons extends Array<infer T> ? T : never, ...(prev ?? [])]);
+      } catch (err) {
+        console.error("Supabase insertLesson error:", err);
+      }
+    }
+
+    // Always update local context state too
+    uploadLesson({ title, courseCode, faculty, campus, videoUrl, description, tiers: selectedTiers, tutorId: supabaseUserId ?? MOCK_TUTOR_ID });
     setTitle(""); setCourseCode(""); setVideoUrl(""); setDescription(""); setSelectedTiers(["recorded"]);
     setToast("Lesson published successfully! 🎉");
     setTimeout(() => setToast(""), 4000);
@@ -166,11 +200,11 @@ export default function CreatorPage() {
               </div>
 
               {/* Uploaded lessons table */}
-              {creatorLessons.length > 0 && (
+              {(displayedLessons ?? creatorLessons).length > 0 && (
                 <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", padding: "1.5rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                   <h3 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                     <span className="material-symbols-outlined" style={{ fontSize: "1.25rem", color: "var(--color-secondary)" }}>library_books</span>
-                    My Uploaded Lessons ({creatorLessons.length})
+                    My Uploaded Lessons ({(displayedLessons ?? creatorLessons).length})
                   </h3>
                   <div style={{ overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "var(--font-body)", fontSize: "0.875rem" }}>
@@ -182,14 +216,14 @@ export default function CreatorPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {creatorLessons.map((cl) => (
+                        {(displayedLessons ?? creatorLessons).map((cl) => (
                           <tr key={cl.id} style={{ borderBottom: "1px solid var(--color-outline-variant)" }}>
                             <td style={tdStyle}><span className="line-clamp-1" style={{ display: "block", maxWidth: "14rem" }}>{cl.title}</span></td>
-                            <td style={tdStyle}><span style={{ padding: "0.125rem 0.5rem", borderRadius: "0.25rem", backgroundColor: "var(--color-primary-fixed)", color: "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 700 }}>{cl.courseCode}</span></td>
+                            <td style={tdStyle}><span style={{ padding: "0.125rem 0.5rem", borderRadius: "0.25rem", backgroundColor: "var(--color-primary-fixed)", color: "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 700 }}>{"course_code" in cl ? cl.course_code : cl.courseCode}</span></td>
                             <td style={tdStyle}>{cl.faculty}</td>
                             <td style={{ ...tdStyle, textTransform: "capitalize" }}>{cl.campus}</td>
-                            <td style={tdStyle}>{cl.tiers.join(", ")}</td>
-                            <td style={tdStyle}>{formatDate(cl.uploadedAt)}</td>
+                            <td style={tdStyle}>{"tiers" in cl && Array.isArray(cl.tiers) ? cl.tiers.join(", ") : "—"}</td>
+                            <td style={tdStyle}>{formatDate("created_at" in cl ? cl.created_at : cl.uploadedAt)}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -248,22 +282,31 @@ export default function CreatorPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {myTransactions.map((t) => (
-                          <tr key={t.id} style={{ borderBottom: "1px solid var(--color-outline-variant)" }}>
-                            <td style={tdStyle}>{formatDate(t.createdAt)}</td>
-                            <td style={tdStyle}><span className="line-clamp-1" style={{ display: "block", maxWidth: "8rem", fontSize: "0.775rem" }}>{getLessonTitle(t.lessonId)}</span></td>
-                            <td style={tdStyle}>{t.totalAmount.toLocaleString()}</td>
-                            <td style={{ ...tdStyle, color: "var(--color-secondary)", fontWeight: 700 }}>{t.tutorCut.toLocaleString()}</td>
-                            <td style={{ ...tdStyle, color: "var(--color-on-surface-variant)" }}>{t.platformCut.toLocaleString()}</td>
-                          </tr>
-                        ))}
+                        {myTransactions.map((t) => {
+                          // Handle both Supabase snake_case and context camelCase shapes
+                          const isSb = "total_amount" in t;
+                          const total     = isSb ? (t as { total_amount: number }).total_amount : (t as { totalAmount: number }).totalAmount;
+                          const tutorCut  = isSb ? (t as { tutor_cut: number }).tutor_cut : (t as { tutorCut: number }).tutorCut;
+                          const platCut   = isSb ? (t as { platform_cut: number }).platform_cut : (t as { platformCut: number }).platformCut;
+                          const createdAt = isSb ? (t as { created_at: string }).created_at : (t as { createdAt: string }).createdAt;
+                          const lessonId  = isSb ? ((t as { lesson_id?: string | null }).lesson_id ?? "") : (t as { lessonId: string }).lessonId;
+                          return (
+                            <tr key={t.id} style={{ borderBottom: "1px solid var(--color-outline-variant)" }}>
+                              <td style={tdStyle}>{formatDate(createdAt)}</td>
+                              <td style={tdStyle}><span className="line-clamp-1" style={{ display: "block", maxWidth: "8rem", fontSize: "0.775rem" }}>{getLessonTitle(lessonId)}</span></td>
+                              <td style={tdStyle}>{total.toLocaleString()}</td>
+                              <td style={{ ...tdStyle, color: "var(--color-secondary)", fontWeight: 700 }}>{tutorCut.toLocaleString()}</td>
+                              <td style={{ ...tdStyle, color: "var(--color-on-surface-variant)" }}>{platCut.toLocaleString()}</td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                       <tfoot>
                         <tr style={{ backgroundColor: "var(--color-surface-container-low)", borderTop: "2px solid var(--color-outline-variant)" }}>
                           <td colSpan={2} style={{ ...tdStyle, fontWeight: 700, color: "var(--color-on-surface)" }}>Total</td>
-                          <td style={{ ...tdStyle, fontWeight: 700 }}>{myTransactions.reduce((s, t) => s + t.totalAmount, 0).toLocaleString()}</td>
-                          <td style={{ ...tdStyle, fontWeight: 700, color: "var(--color-secondary)" }}>{myTransactions.reduce((s, t) => s + t.tutorCut, 0).toLocaleString()}</td>
-                          <td style={{ ...tdStyle, fontWeight: 700 }}>{myTransactions.reduce((s, t) => s + t.platformCut, 0).toLocaleString()}</td>
+                          <td style={{ ...tdStyle, fontWeight: 700 }}>{myTransactions.reduce((s, t) => s + ("total_amount" in t ? (t as { total_amount: number }).total_amount : (t as { totalAmount: number }).totalAmount), 0).toLocaleString()}</td>
+                          <td style={{ ...tdStyle, fontWeight: 700, color: "var(--color-secondary)" }}>{myTransactions.reduce((s, t) => s + ("tutor_cut" in t ? (t as { tutor_cut: number }).tutor_cut : (t as { tutorCut: number }).tutorCut), 0).toLocaleString()}</td>
+                          <td style={{ ...tdStyle, fontWeight: 700 }}>{myTransactions.reduce((s, t) => s + ("platform_cut" in t ? (t as { platform_cut: number }).platform_cut : (t as { platformCut: number }).platformCut), 0).toLocaleString()}</td>
                         </tr>
                       </tfoot>
                     </table>

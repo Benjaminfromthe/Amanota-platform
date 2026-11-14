@@ -7,6 +7,8 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import OnboardingModal from "@/components/auth/OnboardingModal";
 import { useApp } from "@/context/AppContext";
+import { getSupabaseClient } from "@/lib/supabase";
+import { insertBooking, insertWalletTransaction, incrementWallet, uiTierToDb } from "@/lib/db";
 import type { Tier } from "@/context/AppContext";
 
 // ─── Tier config ──────────────────────────────────────────────────────────────
@@ -181,7 +183,7 @@ function PaymentModal({ lessonTitle, tierLabel, price, onConfirm, onClose }: Pay
 export default function LessonPage() {
   const params = useParams();
   const router = useRouter();
-  const { lessons, purchases, purchaseLesson, currentUser } = useApp();
+  const { lessons, purchases, purchaseLesson, currentUser, supabaseUserId } = useApp();
 
   const lessonId = typeof params.id === "string" ? params.id : params.id?.[0] ?? "";
   const lesson = lessons.find((l) => l.id === lessonId);
@@ -206,7 +208,7 @@ export default function LessonPage() {
     setShowModal(true);
   };
 
-  const handleConfirmPayment = (_phone: string, _method: string) => {
+  const handleConfirmPayment = async (_phone: string, _method: string) => {
     const bookingDetails =
       selectedTier !== "recorded"
         ? {
@@ -220,6 +222,47 @@ export default function LessonPage() {
                 : customAddress || "Custom Kigali location",
           }
         : undefined;
+
+    // Write to Supabase if session exists
+    if (supabaseUserId && lesson) {
+      try {
+        const sb = getSupabaseClient();
+        const tutorCut = Math.round(tierConfig.price * 0.8);
+        const platformCut = Math.round(tierConfig.price * 0.2);
+
+        const booking = await insertBooking(sb, {
+          lesson_id:    lesson.id,
+          student_id:   supabaseUserId,
+          tutor_id:     null, // resolved server-side when tutor confirms
+          tier_type:    uiTierToDb(selectedTier),
+          price_rwf:    tierConfig.price,
+          status:       "upcoming",
+          scheduled_at: date ? new Date(date).toISOString() : null,
+          scheduled_time: bookingDetails?.scheduledTime ?? null,
+          location:     bookingDetails?.location ?? null,
+          payment_method: _method,
+          phone_number:   _phone,
+          tutor_cut_rwf:  tutorCut,
+          platform_cut_rwf: platformCut,
+        });
+
+        await insertWalletTransaction(sb, {
+          booking_id:   booking.id,
+          lesson_id:    lesson.id,
+          student_id:   supabaseUserId,
+          total_amount: tierConfig.price,
+          tutor_cut:    tutorCut,
+          platform_cut: platformCut,
+        });
+
+        // Update student wallet (spending side)
+        await incrementWallet(sb, supabaseUserId, 0, tierConfig.price);
+      } catch (err) {
+        console.error("Supabase booking error:", err);
+      }
+    }
+
+    // Always update local context state too
     purchaseLesson(lessonId, selectedTier, tierConfig.price, bookingDetails);
   };
 

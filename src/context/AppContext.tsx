@@ -1,6 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, useEffect } from "react";
+import { getSupabaseClient } from "@/lib/supabase";
+import { getProfile } from "@/lib/db";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -106,6 +108,7 @@ export interface CreatorLesson {
 interface AppState {
   lessons: AppLesson[];
   currentUser: User;
+  supabaseUserId: string | null;   // set once Supabase session resolves
   purchases: Purchase[];
   walletTransactions: WalletTransaction[];
   bookings: Booking[];
@@ -134,6 +137,10 @@ type Action =
         faculty: Faculty;
         campus: Exclude<Campus, "both">;
       };
+    }
+  | {
+      type: "SET_SUPABASE_USER";
+      payload: { userId: string; name: string; studentId: string; faculty: Faculty; campus: Exclude<Campus, "both">; role: "student" | "tutor" };
     }
   | { type: "HYDRATE"; payload: Partial<AppState> };
 
@@ -170,6 +177,7 @@ const SEED_BOOKINGS: Booking[] = [
 const INITIAL_STATE: AppState = {
   lessons: appLessons,
   currentUser: SEED_USER,
+  supabaseUserId: null,
   purchases: SEED_PURCHASES,
   walletTransactions: SEED_TRANSACTIONS,
   bookings: SEED_BOOKINGS,
@@ -183,6 +191,26 @@ function reducer(state: AppState, action: Action): AppState {
 
     case "HYDRATE":
       return { ...state, ...action.payload, lessons: appLessons };
+
+    case "SET_SUPABASE_USER": {
+      const { userId, name, studentId, faculty, campus, role } = action.payload;
+      const initials = name.trim().split(/\s+/).map((w) => w[0]?.toUpperCase() ?? "").slice(0, 2).join("");
+      return {
+        ...state,
+        supabaseUserId: userId,
+        currentUser: {
+          ...state.currentUser,
+          id: userId,
+          name,
+          initials,
+          studentId,
+          faculty,
+          campus,
+          email: `${studentId}@auca.ac.rw`,
+          isOnboarded: true,
+        },
+      };
+    }
 
     case "COMPLETE_ONBOARDING": {
       const { name, studentId, faculty, campus } = action.payload;
@@ -283,7 +311,6 @@ interface AppContextValue extends AppState {
   getTutorWalletBalance: (tutorId: string) => number;
   getPlatformRevenue: () => number;
 }
-
 const AppContext = createContext<AppContextValue | null>(null);
 const LS_KEY = "amanota-state-v2";   // bump version to avoid stale shape conflicts
 
@@ -300,6 +327,40 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
       }
     } catch { /* ignore */ }
   }, []);
+
+  // Listen for Supabase auth session and sync profile into context
+  useEffect(() => {
+    const sb = getSupabaseClient();
+
+    const syncSession = async (userId: string) => {
+      try {
+        const profile = await getProfile(sb, userId);
+        dispatch({
+          type: "SET_SUPABASE_USER",
+          payload: {
+            userId,
+            name:      profile.full_name ?? "",
+            studentId: profile.student_id ?? "",
+            faculty:   (profile.faculty as Faculty) ?? "Software Engineering",
+            campus:    (profile.campus as Exclude<Campus, "both">) ?? "masoro",
+            role:      profile.role ?? "student",
+          },
+        });
+      } catch { /* profile not yet created — onboarding will handle it */ }
+    };
+
+    // Check existing session on mount
+    sb.auth.getSession().then(({ data }) => {
+      if (data.session?.user) syncSession(data.session.user.id);
+    });
+
+    // Subscribe to auth state changes
+    const { data: { subscription } } = sb.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) syncSession(session.user.id);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Persist on every change
   useEffect(() => {

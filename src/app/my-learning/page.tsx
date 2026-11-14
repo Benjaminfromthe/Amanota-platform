@@ -1,12 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useApp } from "@/context/AppContext";
+import { getSupabaseClient } from "@/lib/supabase";
+import { getBookingsByStudent } from "@/lib/db";
+import type { BookingStatus, TierType } from "@/lib/database.types";
 
 type Tab = "lessons" | "upcoming" | "past";
+
+// Shape returned by getBookingsByStudent (joined with lessons)
+interface SbBooking {
+  id: string;
+  lesson_id: string;
+  tier_type: TierType;
+  price_rwf: number;
+  status: BookingStatus;
+  scheduled_at: string | null;
+  scheduled_time: string | null;
+  location: string | null;
+  created_at: string;
+  lessons: { title: string; course_code: string; faculty: string } | null;
+}
 
 function formatDate(iso: string) {
   if (!iso || iso === "TBD") return iso;
@@ -15,25 +32,52 @@ function formatDate(iso: string) {
 }
 
 export default function MyLearningPage() {
-  const { lessons, purchases, bookings, currentUser, markBookingCompleted } = useApp();
+  const { lessons, purchases, bookings, currentUser, markBookingCompleted, supabaseUserId } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>("lessons");
 
+  // Supabase-backed bookings
+  const [sbBookings, setSbBookings] = useState<SbBooking[] | null>(null);
+  const [sbLoading, setSbLoading]   = useState(false);
+
+  useEffect(() => {
+    if (!supabaseUserId) return;
+    setSbLoading(true);
+    const sb = getSupabaseClient();
+    getBookingsByStudent(sb, supabaseUserId)
+      .then((data) => setSbBookings(data as SbBooking[]))
+      .catch((err) => console.error("Supabase bookings fetch:", err))
+      .finally(() => setSbLoading(false));
+  }, [supabaseUserId]);
+
+  const handleMarkCompleted = async (bookingId: string) => {
+    // Update Supabase
+    if (supabaseUserId) {
+      try {
+        const sb = getSupabaseClient();
+        const { updateBookingStatus } = await import("@/lib/db");
+        await updateBookingStatus(sb, bookingId, "completed");
+        setSbBookings((prev) => prev ? prev.map((b) => b.id === bookingId ? { ...b, status: "completed" as BookingStatus } : b) : prev);
+      } catch (err) { console.error("Supabase updateBookingStatus:", err); }
+    }
+    // Always update local context
+    markBookingCompleted(bookingId);
+  };
+
+  // Derive display data — prefer Supabase, fall back to context
   const unlockedLessons = purchases
     .filter((p) => p.tier === "recorded" && p.userId === currentUser.id)
     .map((p) => ({ purchase: p, lesson: lessons.find((l) => l.id === p.lessonId) }))
     .filter((x) => x.lesson !== undefined);
 
-  const upcomingBookings = bookings.filter(
-    (b) => b.userId === currentUser.id && b.status === "upcoming"
-  );
+  const upcomingBookings = sbBookings
+    ? sbBookings.filter((b) => b.status === "upcoming")
+    : bookings.filter((b) => b.userId === currentUser.id && b.status === "upcoming");
 
-  const pastBookings = bookings.filter(
-    (b) => b.userId === currentUser.id && b.status === "completed"
-  );
+  const pastBookings = sbBookings
+    ? sbBookings.filter((b) => b.status === "completed")
+    : bookings.filter((b) => b.userId === currentUser.id && b.status === "completed");
 
-  const totalSpent = purchases
-    .filter((p) => p.userId === currentUser.id)
-    .reduce((s, p) => s + p.pricePaid, 0);
+  const totalSpent = purchases.filter((p) => p.userId === currentUser.id).reduce((s, p) => s + p.pricePaid, 0);
 
   const tabs: { id: Tab; label: string; icon: string; count: number }[] = [
     { id: "lessons",  label: "Unlocked Lessons",         icon: "play_lesson",    count: unlockedLessons.length },
@@ -116,6 +160,14 @@ export default function MyLearningPage() {
 
         {/* ── Tabs ──────────────────────────────────────────────────────── */}
         <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 2rem 4rem" }}>
+
+          {/* Loading indicator when fetching from Supabase */}
+          {sbLoading && (
+            <div style={{ textAlign: "center", padding: "2rem", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-body)", fontSize: "0.875rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
+              <span className="material-symbols-outlined" style={{ fontSize: "1.25rem", animation: "spin 1s linear infinite" }}>hourglass_empty</span>
+              Loading your sessions from Supabase…
+            </div>
+          )}
 
           {/* Tab bar */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.375rem", backgroundColor: "var(--color-surface-container-lowest)", padding: "0.5rem", borderRadius: "1rem", boxShadow: "0 1px 4px rgba(0,0,0,0.04)", marginBottom: "1.75rem", overflowX: "auto" }}>
@@ -217,40 +269,58 @@ export default function MyLearningPage() {
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                   {upcomingBookings.map((booking) => {
-                    const lesson = lessons.find((l) => l.id === booking.lessonId);
+                    // Handle both Supabase booking (SbBooking) and context booking
+                    const isSb = "lesson_id" in booking;
+                    const lessonId = isSb ? (booking as SbBooking).lesson_id : (booking as typeof bookings[0]).lessonId;
+                    const lesson = lessons.find((l) => l.id === lessonId);
+                    const lessonTitle = isSb
+                      ? ((booking as SbBooking).lessons?.title ?? lessonId)
+                      : lesson?.title ?? lessonId;
+                    const courseCode = isSb
+                      ? ((booking as SbBooking).lessons?.course_code ?? "")
+                      : lesson?.courseCode ?? "";
+                    const scheduledDate = isSb
+                      ? formatDate((booking as SbBooking).scheduled_at ?? "TBD")
+                      : (booking as typeof bookings[0]).scheduledDate;
+                    const scheduledTime = isSb
+                      ? ((booking as SbBooking).scheduled_time ?? "")
+                      : (booking as typeof bookings[0]).scheduledTime;
+                    const location = isSb
+                      ? ((booking as SbBooking).location ?? "")
+                      : (booking as typeof bookings[0]).location;
+                    const tierLabel = isSb
+                      ? (booking as SbBooking).tier_type.replace("_", " ")
+                      : (booking as typeof bookings[0]).tier;
                     return (
                       <div key={booking.id} style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", padding: "1.25rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", position: "relative", overflow: "hidden" }}>
                         <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "0.375rem", backgroundColor: "var(--color-primary)" }} />
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "1rem", flexWrap: "wrap" }}>
                           <div style={{ flex: 1 }}>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "0.375rem", marginBottom: "0.5rem" }}>
-                              <span style={{ padding: "0.125rem 0.625rem", borderRadius: "9999px", backgroundColor: "var(--color-primary-fixed)", color: "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 700 }}>{lesson?.courseCode ?? booking.lessonId.toUpperCase()}</span>
-                              <span style={{ padding: "0.125rem 0.625rem", borderRadius: "9999px", backgroundColor: "var(--color-surface-container)", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-label)", fontSize: "0.7rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                                <span className="material-symbols-outlined" style={{ fontSize: "0.875rem" }}>{booking.tier === "online" ? "videocam" : "domain"}</span>
-                                {booking.tier === "online" ? "Online Live" : booking.tier === "campus" ? "AUCA Campus" : "Custom Location"}
-                              </span>
+                              <span style={{ padding: "0.125rem 0.625rem", borderRadius: "9999px", backgroundColor: "var(--color-primary-fixed)", color: "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 700 }}>{courseCode}</span>
+                              <span style={{ padding: "0.125rem 0.625rem", borderRadius: "9999px", backgroundColor: "var(--color-surface-container)", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-label)", fontSize: "0.7rem", textTransform: "capitalize" }}>{tierLabel}</span>
                             </div>
-                            <h3 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.75rem" }}>{lesson?.title ?? booking.lessonId}</h3>
+                            <h3 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.75rem" }}>{lessonTitle}</h3>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
                               <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
                                 <span className="material-symbols-outlined" style={{ color: "var(--color-primary)", fontSize: "1.1rem", marginTop: "0.125rem" }}>schedule</span>
                                 <div>
                                   <p style={{ fontFamily: "var(--font-label)", fontSize: "0.65rem", fontWeight: 700, color: "var(--color-on-surface-variant)", textTransform: "uppercase", margin: "0 0 0.125rem" }}>Date &amp; Time</p>
-                                  <p style={{ fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.125rem" }}>{booking.scheduledDate}</p>
-                                  <p style={{ fontFamily: "var(--font-body)", fontSize: "0.8rem", color: "var(--color-on-surface-variant)", margin: 0 }}>{booking.scheduledTime}</p>
+                                  <p style={{ fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.125rem" }}>{scheduledDate}</p>
+                                  <p style={{ fontFamily: "var(--font-body)", fontSize: "0.8rem", color: "var(--color-on-surface-variant)", margin: 0 }}>{scheduledTime}</p>
                                 </div>
                               </div>
                               <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
                                 <span className="material-symbols-outlined" style={{ color: "var(--color-secondary)", fontSize: "1.1rem", marginTop: "0.125rem" }}>location_on</span>
                                 <div>
                                   <p style={{ fontFamily: "var(--font-label)", fontSize: "0.65rem", fontWeight: 700, color: "var(--color-on-surface-variant)", textTransform: "uppercase", margin: "0 0 0.125rem" }}>Location</p>
-                                  <p style={{ fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0 }}>{booking.location}</p>
+                                  <p style={{ fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0 }}>{location}</p>
                                 </div>
                               </div>
                             </div>
                           </div>
                           <button
-                            onClick={() => markBookingCompleted(booking.id)}
+                            onClick={() => handleMarkCompleted(booking.id)}
                             style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.625rem 1.25rem", borderRadius: "0.75rem", border: "none", cursor: "pointer", backgroundColor: "var(--color-secondary)", color: "var(--color-on-secondary)", fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 700, boxShadow: "0 1px 4px rgba(0,0,0,0.12)", transition: "background 0.15s", alignSelf: "flex-end", whiteSpace: "nowrap" }}
                             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-on-secondary-container)"; }}
                             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-secondary)"; }}
@@ -284,13 +354,19 @@ export default function MyLearningPage() {
                     </thead>
                     <tbody>
                       {pastBookings.map((b) => {
-                        const lesson = lessons.find((l) => l.id === b.lessonId);
+                      const isSb = "lesson_id" in b;
+                      const lessonId = isSb ? (b as SbBooking).lesson_id : (b as typeof bookings[0]).lessonId;
+                      const lesson = lessons.find((l) => l.id === lessonId);
+                      const title = isSb ? ((b as SbBooking).lessons?.title ?? lessonId) : (lesson?.title ?? lessonId);
+                      const date  = isSb ? formatDate((b as SbBooking).scheduled_at ?? "") : (b as typeof bookings[0]).scheduledDate;
+                      const loc   = isSb ? ((b as SbBooking).location ?? "—") : (b as typeof bookings[0]).location;
+                      const tier  = isSb ? (b as SbBooking).tier_type : (b as typeof bookings[0]).tier;
                         return (
                           <tr key={b.id} style={{ borderBottom: "1px solid var(--color-outline-variant)" }}>
-                            <td style={{ padding: "0.75rem 1rem", color: "var(--color-on-surface-variant)" }}>{b.scheduledDate}</td>
-                            <td style={{ padding: "0.75rem 1rem" }}><span className="line-clamp-1" style={{ display: "block", maxWidth: "16rem", fontWeight: 500, color: "var(--color-on-surface)" }}>{lesson?.title ?? b.lessonId}</span></td>
-                            <td style={{ padding: "0.75rem 1rem", textTransform: "capitalize", color: "var(--color-on-surface-variant)" }}>{b.tier}</td>
-                            <td style={{ padding: "0.75rem 1rem", color: "var(--color-on-surface-variant)" }}>{b.location}</td>
+                            <td style={{ padding: "0.75rem 1rem", color: "var(--color-on-surface-variant)" }}>{date}</td>
+                            <td style={{ padding: "0.75rem 1rem" }}><span className="line-clamp-1" style={{ display: "block", maxWidth: "16rem", fontWeight: 500, color: "var(--color-on-surface)" }}>{title}</span></td>
+                            <td style={{ padding: "0.75rem 1rem", textTransform: "capitalize", color: "var(--color-on-surface-variant)" }}>{String(tier).replace("_", " ")}</td>
+                            <td style={{ padding: "0.75rem 1rem", color: "var(--color-on-surface-variant)" }}>{loc}</td>
                             <td style={{ padding: "0.75rem 1rem" }}>
                               <span style={{ padding: "0.25rem 0.625rem", borderRadius: "9999px", backgroundColor: "var(--color-secondary-container)", color: "var(--color-on-secondary-container)", fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
                                 <span className="material-symbols-outlined" style={{ fontSize: "0.875rem" }}>check_circle</span>

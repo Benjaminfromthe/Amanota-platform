@@ -1,9 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useApp } from "@/context/AppContext";
+import { getSupabaseClient } from "@/lib/supabase";
+import { getAdminRevenueSummary, getLessonCountByFaculty, getWalletTransactions } from "@/lib/db";
 import type { Faculty } from "@/context/AppContext";
 
 const FACULTIES: Faculty[] = [
@@ -30,7 +33,7 @@ function formatDate(iso: string) {
 
 export default function AdminPage() {
   const {
-    walletTransactions,
+    walletTransactions: ctxTxns,
     lessons,
     purchases,
     bookings,
@@ -38,35 +41,55 @@ export default function AdminPage() {
     getPlatformRevenue,
   } = useApp();
 
-  // ── Aggregate stats ────────────────────────────────────────────────────────
-  const totalRevenue      = getPlatformRevenue();
-  const totalTutorPayout  = walletTransactions.reduce((s, t) => s + t.tutorCut, 0);
-  const totalGMV          = walletTransactions.reduce((s, t) => s + t.totalAmount, 0);
-  const totalTransactions = walletTransactions.length;
+  // Supabase-backed stats (overlay context data if no Supabase env)
+  const [sbRevenue, setSbRevenue]   = useState<{ platformRevenue: number; tutorPayouts: number; gmv: number; transactionCount: number } | null>(null);
+  const [sbFaculty, setSbFaculty]   = useState<Partial<Record<Faculty, number>> | null>(null);
+  const [sbTxns, setSbTxns]         = useState<Array<{ id: string; total_amount: number; tutor_cut: number; platform_cut: number; created_at: string; lessons: { title: string; course_code: string } | null; tutor_id: string | null }> | null>(null);
+
+  useEffect(() => {
+    const sb = getSupabaseClient();
+    getAdminRevenueSummary(sb).then(setSbRevenue).catch(() => {});
+    getLessonCountByFaculty(sb).then((c) => setSbFaculty(c as Partial<Record<Faculty, number>>)).catch(() => {});
+    getWalletTransactions(sb).then((t) => setSbTxns(t as typeof sbTxns)).catch(() => {});
+  }, []);
+
+  // Aggregate stats — prefer Supabase, fallback to context
+  const totalRevenue      = sbRevenue?.platformRevenue ?? getPlatformRevenue();
+  const totalTutorPayout  = sbRevenue?.tutorPayouts ?? ctxTxns.reduce((s, t) => s + t.tutorCut, 0);
+  const totalGMV          = sbRevenue?.gmv ?? ctxTxns.reduce((s, t) => s + t.totalAmount, 0);
+  const totalTransactions = sbRevenue?.transactionCount ?? ctxTxns.length;
   const totalPurchases    = purchases.length;
   const totalBookings     = bookings.length;
   const completedBookings = bookings.filter((b) => b.status === "completed").length;
 
-  // ── Lessons by faculty ─────────────────────────────────────────────────────
+  const walletTransactions = sbTxns ?? ctxTxns;
+
+  // ── Lessons by faculty — prefer Supabase count, fallback to seeded lessons
   const byFaculty = FACULTIES.map((fk) => {
-    const count = lessons.filter((l) => l.facultyKey === fk).length;
+    const seededCount  = lessons.filter((l) => l.facultyKey === fk).length;
+    const sbCount      = sbFaculty?.[fk] ?? 0;
     const creatorCount = creatorLessons.filter((cl) => cl.faculty === fk).length;
-    return { faculty: fk, lessons: count, creatorLessons: creatorCount, total: count + creatorCount };
+    const dbTotal      = sbCount > 0 ? sbCount : seededCount;
+    return { faculty: fk, lessons: dbTotal, creatorLessons: creatorCount, total: dbTotal + creatorCount };
   }).sort((a, b) => b.total - a.total);
 
   const maxFacultyTotal = Math.max(...byFaculty.map((f) => f.total), 1);
 
   // ── Unique tutors ──────────────────────────────────────────────────────────
-  const uniqueTutors = [...new Set(walletTransactions.map((t) => t.tutorId))];
+  const uniqueTutors = [...new Set(walletTransactions.map((t) => "tutor_id" in t ? (t as { tutor_id: string | null }).tutor_id ?? "" : (t as { tutorId: string }).tutorId).filter(Boolean))];
   const tutorRows = uniqueTutors.map((tutorId) => {
-    const txns = walletTransactions.filter((t) => t.tutorId === tutorId);
+    const txns = walletTransactions.filter((t) => ("tutor_id" in t ? (t as { tutor_id: string | null }).tutor_id : (t as { tutorId: string }).tutorId) === tutorId);
     const lesson = lessons.find((l) => l.tutorId === tutorId);
+    const tutorCutKey = (t: typeof txns[0]) => "tutor_cut" in t ? (t as { tutor_cut: number }).tutor_cut : (t as { tutorCut: number }).tutorCut;
+    const platformCutKey = (t: typeof txns[0]) => "platform_cut" in t ? (t as { platform_cut: number }).platform_cut : (t as { platformCut: number }).platformCut;
+    const totalAmountKey = (t: typeof txns[0]) => "total_amount" in t ? (t as { total_amount: number }).total_amount : (t as { totalAmount: number }).totalAmount;
     return {
       tutorId,
       name: lesson?.instructor.name ?? tutorId,
       sessions: txns.length,
-      earned: txns.reduce((s, t) => s + t.tutorCut, 0),
-      platformFees: txns.reduce((s, t) => s + t.platformCut, 0),
+      earned: txns.reduce((s, t) => s + tutorCutKey(t), 0),
+      platformFees: txns.reduce((s, t) => s + platformCutKey(t), 0),
+      gmv: txns.reduce((s, t) => s + totalAmountKey(t), 0),
     };
   }).sort((a, b) => b.earned - a.earned);
 
@@ -214,21 +237,30 @@ export default function AdminPage() {
                     <tr><td colSpan={7} style={{ padding: "2.5rem", textAlign: "center", color: "var(--color-on-surface-variant)" }}>No transactions yet.</td></tr>
                   )}
                   {[...walletTransactions].reverse().map((t) => {
-                    const lesson = lessons.find((l) => l.id === t.lessonId);
-                    const tutor = lessons.find((l) => l.tutorId === t.tutorId);
+                    const isSb = "total_amount" in t;
+                    const lessonId  = isSb ? (t as { lesson_id?: string | null }).lesson_id ?? "" : (t as { lessonId: string }).lessonId;
+                    const tutorId   = isSb ? (t as { tutor_id?: string | null }).tutor_id ?? "" : (t as { tutorId: string }).tutorId;
+                    const total     = isSb ? (t as { total_amount: number }).total_amount : (t as { totalAmount: number }).totalAmount;
+                    const tutor     = isSb ? (t as { tutor_cut: number }).tutor_cut : (t as { tutorCut: number }).tutorCut;
+                    const platform  = isSb ? (t as { platform_cut: number }).platform_cut : (t as { platformCut: number }).platformCut;
+                    const lesson    = lessons.find((l) => l.id === lessonId);
+                    const tutorInfo = lessons.find((l) => l.tutorId === tutorId);
+                    const lessonTitle = isSb
+                      ? ((t as { lessons?: { title: string } | null }).lessons?.title ?? lessonId)
+                      : (lesson?.title ?? lessonId);
                     return (
                       <tr key={t.id} style={{ borderBottom: "1px solid var(--color-outline-variant)" }}>
-                        <td style={{ padding: "0.625rem 1rem", color: "var(--color-on-surface-variant)", whiteSpace: "nowrap" }}>{formatDate(t.createdAt)}</td>
+                        <td style={{ padding: "0.625rem 1rem", color: "var(--color-on-surface-variant)", whiteSpace: "nowrap" }}>{formatDate("created_at" in t ? (t as { created_at: string }).created_at : (t as { createdAt: string }).createdAt)}</td>
                         <td style={{ padding: "0.625rem 1rem" }}>
                           <span style={{ fontFamily: "var(--font-label)", fontSize: "0.7rem", backgroundColor: "var(--color-surface-container)", color: "var(--color-on-surface-variant)", padding: "0.125rem 0.5rem", borderRadius: "0.25rem" }}>{t.id}</span>
                         </td>
                         <td style={{ padding: "0.625rem 1rem", maxWidth: "14rem" }}>
-                          <span className="line-clamp-1" style={{ display: "block", color: "var(--color-on-surface)", fontWeight: 500 }}>{lesson?.title ?? t.lessonId}</span>
+                          <span className="line-clamp-1" style={{ display: "block", color: "var(--color-on-surface)", fontWeight: 500 }}>{lessonTitle}</span>
                         </td>
-                        <td style={{ padding: "0.625rem 1rem", color: "var(--color-on-surface-variant)" }}>{tutor?.instructor.name ?? t.tutorId}</td>
-                        <td style={{ padding: "0.625rem 1rem", fontWeight: 600, color: "var(--color-on-surface)" }}>{fmt(t.totalAmount)} RWF</td>
-                        <td style={{ padding: "0.625rem 1rem", fontWeight: 700, color: "var(--color-secondary)" }}>{fmt(t.tutorCut)} RWF</td>
-                        <td style={{ padding: "0.625rem 1rem", fontWeight: 700, color: "var(--color-primary)" }}>{fmt(t.platformCut)} RWF</td>
+                        <td style={{ padding: "0.625rem 1rem", color: "var(--color-on-surface-variant)" }}>{tutorInfo?.instructor.name ?? tutorId}</td>
+                        <td style={{ padding: "0.625rem 1rem", fontWeight: 600, color: "var(--color-on-surface)" }}>{fmt(total)} RWF</td>
+                        <td style={{ padding: "0.625rem 1rem", fontWeight: 700, color: "var(--color-secondary)" }}>{fmt(tutor)} RWF</td>
+                        <td style={{ padding: "0.625rem 1rem", fontWeight: 700, color: "var(--color-primary)" }}>{fmt(platform)} RWF</td>
                       </tr>
                     );
                   })}
