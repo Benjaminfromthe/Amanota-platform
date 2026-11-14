@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import OnboardingModal from "@/components/auth/OnboardingModal";
 import { useApp } from "@/context/AppContext";
 import type { Campus, Faculty, Tier } from "@/context/AppContext";
 
@@ -26,7 +27,7 @@ function formatDate(iso: string) {
 }
 
 export default function CreatorPage() {
-  const { walletTransactions, creatorLessons, uploadLesson, getTutorWalletBalance, getPlatformRevenue, lessons } = useApp();
+  const { walletTransactions, creatorLessons, uploadLesson, getTutorWalletBalance, getPlatformRevenue, lessons, currentUser } = useApp();
 
   // ── Form state
   const [title, setTitle] = useState("");
@@ -37,6 +38,7 @@ export default function CreatorPage() {
   const [description, setDescription] = useState("");
   const [selectedTiers, setSelectedTiers] = useState<Tier[]>(["recorded"]);
   const [toast, setToast] = useState("");
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const walletBalance = getTutorWalletBalance(MOCK_TUTOR_ID);
   const platformRevenue = getPlatformRevenue();
@@ -49,6 +51,7 @@ export default function CreatorPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!currentUser.isOnboarded) { setShowOnboarding(true); return; }
     if (!title.trim() || !courseCode.trim() || !videoUrl.trim()) {
       setToast("Please fill in all required fields.");
       setTimeout(() => setToast(""), 3000);
@@ -271,6 +274,12 @@ export default function CreatorPage() {
           </div>
         </div>
       </main>
+      {showOnboarding && (
+        <OnboardingModal
+          reason="Sign in to publish a lesson on AMANOTA"
+          onClose={() => setShowOnboarding(false)}
+        />
+      )}
       <Footer />
     </>
   );

@@ -50,8 +50,11 @@ export interface User {
   id: string;
   name: string;
   initials: string;
+  studentId: string;         // e.g. "28318"
   email: string;
-  campus: Campus;
+  faculty: Faculty;
+  campus: Exclude<Campus, "both">;   // students pick one campus
+  isOnboarded: boolean;
 }
 
 export interface Purchase {
@@ -98,7 +101,7 @@ export interface CreatorLesson {
   tutorId: string;
 }
 
-// ─── State shape ─────────────────────────────────────────────────────────────
+// ─── State ────────────────────────────────────────────────────────────────────
 
 interface AppState {
   lessons: AppLesson[];
@@ -118,91 +121,50 @@ type Action =
         lessonId: string;
         tier: Tier;
         pricePaid: number;
-        bookingDetails?: {
-          scheduledDate: string;
-          scheduledTime: string;
-          location: string;
-        };
+        bookingDetails?: { scheduledDate: string; scheduledTime: string; location: string };
       };
     }
   | { type: "MARK_BOOKING_COMPLETED"; payload: { bookingId: string } }
   | { type: "UPLOAD_LESSON"; payload: Omit<CreatorLesson, "id" | "uploadedAt"> }
+  | {
+      type: "COMPLETE_ONBOARDING";
+      payload: {
+        name: string;
+        studentId: string;
+        faculty: Faculty;
+        campus: Exclude<Campus, "both">;
+      };
+    }
   | { type: "HYDRATE"; payload: Partial<AppState> };
 
-// ─── Seed data (imported lazily to avoid circular dependency) ─────────────────
+// ─── Seed data ────────────────────────────────────────────────────────────────
 
 import { appLessons } from "@/lib/data";
 
 const SEED_USER: User = {
   id: "user-001",
-  name: "Cedric Ishimwe",
-  initials: "CI",
-  email: "c.ishimwe@auca.ac.rw",
+  name: "",
+  initials: "",
+  studentId: "",
+  email: "",
+  faculty: "Software Engineering",
   campus: "masoro",
+  isOnboarded: false,
 };
 
 const SEED_PURCHASES: Purchase[] = [
-  {
-    id: "pur-001",
-    userId: "user-001",
-    lessonId: "comp201",
-    tier: "recorded",
-    pricePaid: 1000,
-    purchasedAt: "2025-01-10T09:00:00Z",
-    status: "active",
-  },
-  {
-    id: "pur-002",
-    userId: "user-001",
-    lessonId: "se304",
-    tier: "recorded",
-    pricePaid: 1000,
-    purchasedAt: "2025-01-12T14:00:00Z",
-    status: "active",
-  },
+  { id: "pur-001", userId: "user-001", lessonId: "comp201", tier: "recorded", pricePaid: 1000, purchasedAt: "2025-01-10T09:00:00Z", status: "active" },
+  { id: "pur-002", userId: "user-001", lessonId: "se304",   tier: "recorded", pricePaid: 1000, purchasedAt: "2025-01-12T14:00:00Z", status: "active" },
 ];
 
 const SEED_TRANSACTIONS: WalletTransaction[] = [
-  {
-    id: "wt-001",
-    lessonId: "comp201",
-    tutorId: "tutor-001",
-    totalAmount: 1000,
-    tutorCut: 800,
-    platformCut: 200,
-    createdAt: "2025-01-10T09:00:00Z",
-  },
-  {
-    id: "wt-002",
-    lessonId: "comp201",
-    tutorId: "tutor-001",
-    totalAmount: 3000,
-    tutorCut: 2400,
-    platformCut: 600,
-    createdAt: "2025-01-14T11:00:00Z",
-  },
-  {
-    id: "wt-003",
-    lessonId: "cs310",
-    tutorId: "tutor-001",
-    totalAmount: 2000,
-    tutorCut: 1600,
-    platformCut: 400,
-    createdAt: "2025-01-16T15:30:00Z",
-  },
+  { id: "wt-001", lessonId: "comp201", tutorId: "tutor-001", totalAmount: 1000, tutorCut: 800,  platformCut: 200, createdAt: "2025-01-10T09:00:00Z" },
+  { id: "wt-002", lessonId: "comp201", tutorId: "tutor-001", totalAmount: 3000, tutorCut: 2400, platformCut: 600, createdAt: "2025-01-14T11:00:00Z" },
+  { id: "wt-003", lessonId: "cs310",   tutorId: "tutor-001", totalAmount: 2000, tutorCut: 1600, platformCut: 400, createdAt: "2025-01-16T15:30:00Z" },
 ];
 
 const SEED_BOOKINGS: Booking[] = [
-  {
-    id: "book-001",
-    userId: "user-001",
-    lessonId: "se304",
-    tier: "campus",
-    scheduledDate: "Friday, Oct 25",
-    scheduledTime: "02:00 PM – 02:45 PM",
-    location: "Gishushu Study Hall",
-    status: "upcoming",
-  },
+  { id: "book-001", userId: "user-001", lessonId: "se304", tier: "campus", scheduledDate: "Friday, Oct 25", scheduledTime: "02:00 PM – 02:45 PM", location: "Gishushu Study Hall", status: "upcoming" },
 ];
 
 const INITIAL_STATE: AppState = {
@@ -218,13 +180,27 @@ const INITIAL_STATE: AppState = {
 
 function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
+
     case "HYDRATE":
+      return { ...state, ...action.payload, lessons: appLessons };
+
+    case "COMPLETE_ONBOARDING": {
+      const { name, studentId, faculty, campus } = action.payload;
+      const initials = name.trim().split(/\s+/).map((w) => w[0].toUpperCase()).slice(0, 2).join("");
       return {
         ...state,
-        ...action.payload,
-        // Always keep latest lessons from code (future-proof for data upgrades)
-        lessons: appLessons,
+        currentUser: {
+          ...state.currentUser,
+          name,
+          initials,
+          studentId,
+          faculty,
+          campus,
+          email: `${studentId}@auca.ac.rw`,
+          isOnboarded: true,
+        },
       };
+    }
 
     case "PURCHASE_LESSON": {
       const { lessonId, tier, pricePaid, bookingDetails } = action.payload;
@@ -253,7 +229,7 @@ function reducer(state: AppState, action: Action): AppState {
 
       const newBookings = [...state.bookings];
       if (tier !== "recorded" && bookingDetails) {
-        const booking: Booking = {
+        newBookings.push({
           id: `book-${Date.now()}`,
           userId: state.currentUser.id,
           lessonId,
@@ -262,8 +238,7 @@ function reducer(state: AppState, action: Action): AppState {
           scheduledTime: bookingDetails.scheduledTime,
           location: bookingDetails.location,
           status: "upcoming",
-        };
-        newBookings.push(booking);
+        });
       }
 
       return {
@@ -276,55 +251,41 @@ function reducer(state: AppState, action: Action): AppState {
 
     case "MARK_BOOKING_COMPLETED": {
       const { bookingId } = action.payload;
+      const linkedLessonId = state.bookings.find((b) => b.id === bookingId)?.lessonId;
       return {
         ...state,
-        bookings: state.bookings.map((b) =>
-          b.id === bookingId ? { ...b, status: "completed" } : b
-        ),
-        purchases: state.purchases.map((p) =>
-          p.lessonId ===
-          state.bookings.find((b) => b.id === bookingId)?.lessonId
-            ? { ...p, status: "completed" }
-            : p
-        ),
+        bookings: state.bookings.map((b) => b.id === bookingId ? { ...b, status: "completed" } : b),
+        purchases: state.purchases.map((p) => p.lessonId === linkedLessonId ? { ...p, status: "completed" } : p),
       };
     }
 
-    case "UPLOAD_LESSON": {
-      const lesson: CreatorLesson = {
-        ...action.payload,
-        id: `cl-${Date.now()}`,
-        uploadedAt: new Date().toISOString(),
-      };
+    case "UPLOAD_LESSON":
       return {
         ...state,
-        creatorLessons: [...state.creatorLessons, lesson],
+        creatorLessons: [
+          ...state.creatorLessons,
+          { ...action.payload, id: `cl-${Date.now()}`, uploadedAt: new Date().toISOString() },
+        ],
       };
-    }
 
     default:
       return state;
   }
 }
 
-// ─── Context ──────────────────────────────────────────────────────────────────
+// ─── Context value ────────────────────────────────────────────────────────────
 
 interface AppContextValue extends AppState {
-  purchaseLesson: (
-    lessonId: string,
-    tier: Tier,
-    pricePaid: number,
-    bookingDetails?: { scheduledDate: string; scheduledTime: string; location: string }
-  ) => void;
+  purchaseLesson: (lessonId: string, tier: Tier, pricePaid: number, bookingDetails?: { scheduledDate: string; scheduledTime: string; location: string }) => void;
   markBookingCompleted: (bookingId: string) => void;
   uploadLesson: (lesson: Omit<CreatorLesson, "id" | "uploadedAt">) => void;
+  completeOnboarding: (data: { name: string; studentId: string; faculty: Faculty; campus: Exclude<Campus, "both"> }) => void;
   getTutorWalletBalance: (tutorId: string) => number;
   getPlatformRevenue: () => number;
 }
 
 const AppContext = createContext<AppContextValue | null>(null);
-
-const LS_KEY = "amanota-state";
+const LS_KEY = "amanota-state-v2";   // bump version to avoid stale shape conflicts
 
 export function AppContextProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
@@ -337,56 +298,35 @@ export function AppContextProvider({ children }: { children: React.ReactNode }) 
         const parsed = JSON.parse(saved) as Partial<AppState>;
         dispatch({ type: "HYDRATE", payload: parsed });
       }
-    } catch {
-      // ignore parse errors
-    }
+    } catch { /* ignore */ }
   }, []);
 
-  // Persist on every state change
+  // Persist on every change
   useEffect(() => {
-    try {
-      localStorage.setItem(LS_KEY, JSON.stringify(state));
-    } catch {
-      // ignore storage errors
-    }
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); }
+    catch { /* ignore */ }
   }, [state]);
 
-  const purchaseLesson: AppContextValue["purchaseLesson"] = (
-    lessonId,
-    tier,
-    pricePaid,
-    bookingDetails
-  ) => {
+  const purchaseLesson: AppContextValue["purchaseLesson"] = (lessonId, tier, pricePaid, bookingDetails) =>
     dispatch({ type: "PURCHASE_LESSON", payload: { lessonId, tier, pricePaid, bookingDetails } });
-  };
 
-  const markBookingCompleted = (bookingId: string) => {
+  const markBookingCompleted = (bookingId: string) =>
     dispatch({ type: "MARK_BOOKING_COMPLETED", payload: { bookingId } });
-  };
 
-  const uploadLesson = (lesson: Omit<CreatorLesson, "id" | "uploadedAt">) => {
+  const uploadLesson = (lesson: Omit<CreatorLesson, "id" | "uploadedAt">) =>
     dispatch({ type: "UPLOAD_LESSON", payload: lesson });
-  };
+
+  const completeOnboarding: AppContextValue["completeOnboarding"] = (data) =>
+    dispatch({ type: "COMPLETE_ONBOARDING", payload: data });
 
   const getTutorWalletBalance = (tutorId: string) =>
-    state.walletTransactions
-      .filter((t) => t.tutorId === tutorId)
-      .reduce((sum, t) => sum + t.tutorCut, 0);
+    state.walletTransactions.filter((t) => t.tutorId === tutorId).reduce((s, t) => s + t.tutorCut, 0);
 
   const getPlatformRevenue = () =>
-    state.walletTransactions.reduce((sum, t) => sum + t.platformCut, 0);
+    state.walletTransactions.reduce((s, t) => s + t.platformCut, 0);
 
   return (
-    <AppContext.Provider
-      value={{
-        ...state,
-        purchaseLesson,
-        markBookingCompleted,
-        uploadLesson,
-        getTutorWalletBalance,
-        getPlatformRevenue,
-      }}
-    >
+    <AppContext.Provider value={{ ...state, purchaseLesson, markBookingCompleted, uploadLesson, completeOnboarding, getTutorWalletBalance, getPlatformRevenue }}>
       {children}
     </AppContext.Provider>
   );

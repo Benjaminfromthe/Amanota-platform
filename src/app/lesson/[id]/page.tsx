@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import OnboardingModal from "@/components/auth/OnboardingModal";
 import { useApp } from "@/context/AppContext";
 import type { Tier } from "@/context/AppContext";
 
@@ -180,7 +181,7 @@ function PaymentModal({ lessonTitle, tierLabel, price, onConfirm, onClose }: Pay
 export default function LessonPage() {
   const params = useParams();
   const router = useRouter();
-  const { lessons, purchases, purchaseLesson } = useApp();
+  const { lessons, purchases, purchaseLesson, currentUser } = useApp();
 
   const lessonId = typeof params.id === "string" ? params.id : params.id?.[0] ?? "";
   const lesson = lessons.find((l) => l.id === lessonId);
@@ -196,8 +197,14 @@ export default function LessonPage() {
   const alreadyPurchased = purchases.some(
     (p) => p.lessonId === lessonId && p.tier === selectedTier
   );
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const tierConfig = TIER_CONFIG.find((t) => t.id === selectedTier)!;
+
+  const handleBookClick = () => {
+    if (!currentUser.isOnboarded) { setShowOnboarding(true); return; }
+    setShowModal(true);
+  };
 
   const handleConfirmPayment = (_phone: string, _method: string) => {
     const bookingDetails =
@@ -443,7 +450,7 @@ export default function LessonPage() {
                     </div>
                   ) : (
                     <button
-                      onClick={() => setShowModal(true)}
+                      onClick={handleBookClick}
                       style={{ width: "100%", padding: "0.875rem", borderRadius: "0.75rem", border: "none", cursor: "pointer", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontFamily: "var(--font-label)", fontSize: "1rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem", boxShadow: "0 4px 16px rgba(53,37,205,0.3)", transition: "background 0.15s" }}
                       onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-on-primary-fixed-variant)"; }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-primary)"; }}
@@ -464,6 +471,13 @@ export default function LessonPage() {
           </div>
         </div>
       </main>
+
+      {showOnboarding && (
+        <OnboardingModal
+          reason="Sign in to book or purchase this lesson"
+          onClose={() => setShowOnboarding(false)}
+        />
+      )}
 
       {showModal && (
         <PaymentModal

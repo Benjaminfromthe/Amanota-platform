@@ -123,7 +123,7 @@ export default function Footer() {
         <span style={{ fontFamily: "var(--font-body)", fontSize: "0.8rem", color: "var(--color-on-surface-variant)" }}>
           © 2025 AMANOTA Academic Technologies. All rights reserved.
         </span>
-        <div style={{ display: "flex", gap: "1.5rem" }}>
+        <div style={{ display: "flex", gap: "1.5rem", flexWrap: "wrap", alignItems: "center" }}>
           {["Privacy Policy", "Honor Code", "Terms of Service"].map((item) => (
             <Link
               key={item}
@@ -138,6 +138,23 @@ export default function Footer() {
               {item}
             </Link>
           ))}
+          <Link
+            href="/admin"
+            style={{
+              fontFamily: "var(--font-label)",
+              fontSize: "0.75rem",
+              fontWeight: 600,
+              color: "var(--color-outline)",
+              textDecoration: "none",
+              display: "flex",
+              alignItems: "center",
+              gap: "0.25rem",
+              opacity: 0.7,
+            }}
+          >
+            <span className="material-symbols-outlined" style={{ fontSize: "0.9rem" }}>admin_panel_settings</span>
+            Platform Ledger
+          </Link>
         </div>
       </div>
     </footer>

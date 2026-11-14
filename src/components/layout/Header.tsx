@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import OnboardingModal from "@/components/auth/OnboardingModal";
+import { useApp } from "@/context/AppContext";
 
 const campuses = [
   { id: "masoro", label: "Masoro Campus (Main)", active: true },
@@ -11,8 +13,11 @@ const campuses = [
 export default function Header() {
   const [campusOpen, setCampusOpen] = useState(false);
   const [activeCampus, setActiveCampus] = useState(campuses[0]);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const { currentUser } = useApp();
 
   return (
+    <>
     <header
       style={{
         position: "fixed",
@@ -298,26 +303,29 @@ export default function Header() {
             />
           </button>
 
-          {/* Avatar */}
-          <Link href="#">
-            <div
-              style={{
-                width: "2rem",
-                height: "2rem",
-                borderRadius: "9999px",
-                backgroundColor: "var(--color-primary)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
+          {/* Avatar / Sign-in */}
+          {currentUser.isOnboarded ? (
+            <Link href="/my-learning" title={currentUser.name}>
+              <div style={{ width: "2rem", height: "2rem", borderRadius: "9999px", backgroundColor: "var(--color-primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ color: "var(--color-on-primary)", fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 700 }}>{currentUser.initials}</span>
+              </div>
+            </Link>
+          ) : (
+            <button
+              onClick={() => setShowOnboarding(true)}
+              style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.375rem 0.875rem", borderRadius: "9999px", border: "1.5px solid var(--color-primary)", backgroundColor: "transparent", cursor: "pointer", fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 600, color: "var(--color-primary)" }}
             >
-              <span className="material-symbols-outlined" style={{ color: "var(--color-on-primary)", fontSize: "1.1rem" }}>
-                person
-              </span>
-            </div>
-          </Link>
+              <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>login</span>
+              Sign In
+            </button>
+          )}
         </nav>
       </div>
     </header>
+
+    {showOnboarding && (
+      <OnboardingModal onClose={() => setShowOnboarding(false)} />
+    )}
+    </>
   );
 }
