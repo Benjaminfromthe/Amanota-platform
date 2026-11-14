@@ -257,7 +257,7 @@ export default function LessonPage() {
             <div>
               {/* Video player placeholder */}
               <div style={{ width: "100%", aspectRatio: "16/9", borderRadius: "1rem", backgroundColor: "var(--color-inverse-surface)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", marginBottom: "1.5rem", boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
-                {lesson.thumbnail && lesson.thumbnail !== "/placeholder.jpg" && (
+                {lesson.thumbnail && lesson.thumbnail !== "/placeholder.svg" && (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={lesson.thumbnail} alt={lesson.thumbnailAlt} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
                 )}

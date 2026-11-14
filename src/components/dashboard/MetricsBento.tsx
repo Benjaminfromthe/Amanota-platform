@@ -1,5 +1,7 @@
 "use client";
 
+import { useApp } from "@/context/AppContext";
+
 interface MetricCardProps {
   label: string;
   value: React.ReactNode;
@@ -115,6 +117,18 @@ function ProgressBar({ percent, color }: { percent: number; color: string }) {
 }
 
 export default function MetricsBento() {
+  const { purchases, bookings } = useApp();
+
+  const unlockedCount = purchases.filter((p) => p.tier === "recorded").length;
+  const upcomingCount = bookings.filter((b) => b.status === "upcoming").length;
+  const escrowTotal = bookings
+    .filter((b) => b.status === "upcoming")
+    .reduce((sum, b) => {
+      const p = purchases.find((pu) => pu.lessonId === b.lessonId);
+      return sum + (p?.pricePaid ?? 0);
+    }, 0);
+  const tutorPayoutPool = Math.round(escrowTotal * 0.8);
+
   return (
     <div
       style={{
@@ -127,7 +141,7 @@ export default function MetricsBento() {
       {/* Unlocked Modules */}
       <MetricCard
         label="Unlocked Modules"
-        value="6 Lessons"
+        value={`${unlockedCount} Lesson${unlockedCount !== 1 ? "s" : ""}`}
         sub={
           <>
             <span className="material-symbols-outlined" style={{ fontSize: "1rem", color: "var(--color-secondary)" }}>
@@ -145,8 +159,8 @@ export default function MetricsBento() {
       {/* Upcoming Sessions */}
       <MetricCard
         label="Upcoming Sessions"
-        value="3 Booked"
-        sub={<span>1 Online • 1 AUCA • 1 Cafe</span>}
+        value={`${upcomingCount} Booked`}
+        sub={<span>Peer tutoring sessions</span>}
         icon="groups"
         iconBg="var(--color-secondary-container)"
         iconColor="var(--color-secondary)"
@@ -170,7 +184,7 @@ export default function MetricsBento() {
                 color: "var(--color-secondary)",
               }}
             >
-              Next: Tomorrow at AUCA Library
+              AUCA Escrow Protected
             </span>
           </div>
         }
@@ -181,7 +195,7 @@ export default function MetricsBento() {
         label="Amanota Escrow Vault"
         value={
           <span style={{ color: "var(--color-primary)" }}>
-            8,000{" "}
+            {escrowTotal.toLocaleString()}{" "}
             <span style={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-on-surface-variant)" }}>RWF</span>
           </span>
         }
@@ -207,7 +221,7 @@ export default function MetricsBento() {
             }}
           >
             <span>Tutor Payout Pool</span>
-            <span style={{ fontWeight: 700, color: "var(--color-on-surface)" }}>6,400 RWF (80%)</span>
+            <span style={{ fontWeight: 700, color: "var(--color-on-surface)" }}>{tutorPayoutPool.toLocaleString()} RWF (80%)</span>
           </div>
         }
       />

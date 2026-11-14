@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import { useApp } from "@/context/AppContext";
 
 export default function StudentHeader() {
+  const { currentUser } = useApp();
   return (
     <div
       style={{
@@ -35,7 +37,7 @@ export default function StudentHeader() {
               boxShadow: "0 4px 12px rgba(53,37,205,0.2)",
             }}
           >
-            CI
+            {currentUser.initials}
           </div>
           <div
             style={{
@@ -77,7 +79,7 @@ export default function StudentHeader() {
                 letterSpacing: "-0.01em",
               }}
             >
-              Cedric Ishimwe
+            {currentUser.name}
             </span>
             <span
               style={{

@@ -55,12 +55,12 @@ export default function ExploreLessonCard({ lesson }: Props) {
       <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", overflow: "hidden", backgroundColor: "var(--color-surface-container-highest)", flexShrink: 0 }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={lesson.thumbnail === "/placeholder.jpg" ? undefined : lesson.thumbnail}
+          src={lesson.thumbnail === "/placeholder.svg" ? undefined : lesson.thumbnail}
           alt={lesson.thumbnailAlt}
           style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
           onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
         />
-        {lesson.thumbnail === "/placeholder.jpg" && (
+        {lesson.thumbnail === "/placeholder.svg" && (
           <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--color-surface-container-high)" }}>
             <span className="material-symbols-outlined" style={{ fontSize: "3rem", color: "var(--color-outline)" }}>play_circle</span>
           </div>

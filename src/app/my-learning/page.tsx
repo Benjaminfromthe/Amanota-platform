@@ -148,7 +148,7 @@ export default function MyLearningPage() {
                     <div key={purchase.id} style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                       {/* Thumbnail */}
                       <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", backgroundColor: "var(--color-surface-container-highest)", overflow: "hidden" }}>
-                        {lesson!.thumbnail && lesson!.thumbnail !== "/placeholder.jpg" ? (
+                        {lesson!.thumbnail && lesson!.thumbnail !== "/placeholder.svg" ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={lesson!.thumbnail} alt={lesson!.thumbnailAlt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
