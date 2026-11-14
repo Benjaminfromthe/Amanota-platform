@@ -212,10 +212,14 @@ export default function Header() {
 
         {/* Right: Nav + CTA + icons */}
         <nav style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          {["Courses", "Find Tutors", "Study Hub"].map((item) => (
+          {[
+            { label: "Courses", href: "/" },
+            { label: "Find Tutors", href: "/lesson/comp201" },
+            { label: "Study Hub", href: "/my-learning" },
+          ].map(({ label, href }) => (
             <Link
-              key={item}
-              href="#"
+              key={label}
+              href={href}
               style={{
                 padding: "0.5rem 0.75rem",
                 borderRadius: "0.5rem",
@@ -236,12 +240,12 @@ export default function Header() {
                 e.currentTarget.style.color = "var(--color-on-surface-variant)";
               }}
             >
-              {item}
+              {label}
             </Link>
           ))}
 
           <Link
-            href="#"
+            href="/creator"
             style={{
               display: "inline-flex",
               alignItems: "center",
