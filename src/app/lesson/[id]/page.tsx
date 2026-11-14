@@ -7,8 +7,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import OnboardingModal from "@/components/auth/OnboardingModal";
 import { useApp } from "@/context/AppContext";
-import { getSupabaseClient } from "@/lib/supabase";
-import { insertBooking, insertWalletTransaction, incrementWallet, uiTierToDb } from "@/lib/db";
+import { uiTierToDb } from "@/lib/db";
 import type { Tier } from "@/context/AppContext";
 
 // ─── Tier config ──────────────────────────────────────────────────────────────
@@ -223,46 +222,32 @@ export default function LessonPage() {
           }
         : undefined;
 
-    // Write to Supabase if session exists
+    // ── Call server-side API route (fires DB trigger atomically) ─────────
     if (supabaseUserId && lesson) {
       try {
-        const sb = getSupabaseClient();
-        const tutorCut = Math.round(tierConfig.price * 0.8);
-        const platformCut = Math.round(tierConfig.price * 0.2);
-
-        const booking = await insertBooking(sb, {
-          lesson_id:    lesson.id,
-          student_id:   supabaseUserId,
-          tutor_id:     null, // resolved server-side when tutor confirms
-          tier_type:    uiTierToDb(selectedTier),
-          price_rwf:    tierConfig.price,
-          status:       "upcoming",
-          scheduled_at: date ? new Date(date).toISOString() : null,
-          scheduled_time: bookingDetails?.scheduledTime ?? null,
-          location:     bookingDetails?.location ?? null,
-          payment_method: _method,
-          phone_number:   _phone,
-          tutor_cut_rwf:  tutorCut,
-          platform_cut_rwf: platformCut,
+        const res = await fetch("/api/purchase", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            lesson_id:       lesson.id,
+            tier_type:       uiTierToDb(selectedTier),
+            price_rwf:       tierConfig.price,
+            scheduled_at:    date ? new Date(date).toISOString() : null,
+            scheduled_time:  bookingDetails?.scheduledTime ?? null,
+            location:        bookingDetails?.location ?? null,
+            payment_method:  _method,
+            phone_number:    _phone,
+          }),
         });
-
-        await insertWalletTransaction(sb, {
-          booking_id:   booking.id,
-          lesson_id:    lesson.id,
-          student_id:   supabaseUserId,
-          total_amount: tierConfig.price,
-          tutor_cut:    tutorCut,
-          platform_cut: platformCut,
-        });
-
-        // Update student wallet (spending side)
-        await incrementWallet(sb, supabaseUserId, 0, tierConfig.price);
+        const json = await res.json();
+        if (!res.ok) console.error("[purchase] API error:", json.error);
+        else console.info("[purchase] OK — booking:", json.booking_id, "tutor:", json.tutor_cut, "platform:", json.platform_cut);
       } catch (err) {
-        console.error("Supabase booking error:", err);
+        console.error("[purchase] fetch error:", err);
       }
     }
 
-    // Always update local context state too
+    // Always update local context state (works without Supabase too)
     purchaseLesson(lessonId, selectedTier, tierConfig.price, bookingDetails);
   };
 

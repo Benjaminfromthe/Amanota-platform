@@ -112,10 +112,16 @@ export default function AdminPage() {
                 </div>
               </div>
             </div>
-            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.5rem 1rem", borderRadius: "0.625rem", backgroundColor: "var(--color-surface-container-lowest)", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 600, textDecoration: "none", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>arrow_back</span>
-              Back to Explore
-            </Link>
+            <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+              <Link href="/admin/ledger" style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.5rem 1rem", borderRadius: "0.625rem", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 600, textDecoration: "none", boxShadow: "0 2px 8px rgba(53,37,205,0.2)" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>receipt_long</span>
+                Full Commission Ledger
+              </Link>
+              <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.5rem 1rem", borderRadius: "0.625rem", backgroundColor: "var(--color-surface-container-lowest)", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 600, textDecoration: "none", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
+                <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>arrow_back</span>
+                Back to Explore
+              </Link>
+            </div>
           </div>
 
           {/* ── KPI bento ──────────────────────────────────────────────── */}

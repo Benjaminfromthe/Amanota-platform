@@ -139,7 +139,7 @@ export default function Footer() {
             </Link>
           ))}
           <Link
-            href="/admin"
+            href="/admin/ledger"
             style={{
               fontFamily: "var(--font-label)",
               fontSize: "0.75rem",
