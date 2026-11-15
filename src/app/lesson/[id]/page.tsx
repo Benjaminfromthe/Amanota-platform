@@ -9,6 +9,7 @@ import OnboardingModal from "@/components/auth/OnboardingModal";
 import { useApp } from "@/context/AppContext";
 import { uiTierToDb } from "@/lib/db";
 import type { Tier } from "@/context/AppContext";
+import { ChevronRight, PlayCircle, Building2, Monitor, Video, MapPin, Shield, X, Lock, ArrowRight, CheckCircle2, SearchX, Banknote, Phone } from "lucide-react";
 
 // ─── Tier config ──────────────────────────────────────────────────────────────
 
@@ -24,6 +25,13 @@ const TIER_CONFIG: {
   { id: "campus",   label: "In-Person at AUCA Campus", price: 3000, tagline: "Meet your tutor on campus", icon: "domain" },
   { id: "custom",   label: "In-Person — Custom Location (Kigali)", price: 5000, tagline: "Any spot in Kigali you choose", icon: "location_on" },
 ];
+
+const TIER_ICONS: Record<string, React.ReactNode> = {
+  recorded: <Monitor size={22} />,
+  online: <Video size={22} />,
+  campus: <Building2 size={22} />,
+  custom: <MapPin size={22} />,
+};
 
 const CAMPUS_LOCATIONS = [
   "Masoro Library Study Room",
@@ -83,7 +91,7 @@ function PaymentModal({ lessonTitle, tierLabel, price, onConfirm, onClose }: Pay
           /* ── Success state ── */
           <div style={{ textAlign: "center", padding: "1rem 0" }}>
             <div style={{ width: "4rem", height: "4rem", borderRadius: "9999px", backgroundColor: "var(--color-secondary-container)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "2.25rem", color: "var(--color-secondary)", fontVariationSettings: "'FILL' 1" }}>check_circle</span>
+              <CheckCircle2 size={36} color="var(--color-secondary)" />
             </div>
             <h3 style={{ fontFamily: "var(--font-headline)", fontSize: "1.375rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.5rem" }}>Payment Successful! 🎉</h3>
             <p style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem", color: "var(--color-on-surface-variant)", margin: "0 0 1.5rem" }}>
@@ -91,7 +99,7 @@ function PaymentModal({ lessonTitle, tierLabel, price, onConfirm, onClose }: Pay
             </p>
             <Link href="/my-learning" style={{ display: "inline-flex", alignItems: "center", gap: "0.375rem", padding: "0.625rem 1.5rem", borderRadius: "0.75rem", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontFamily: "var(--font-label)", fontWeight: 600, fontSize: "0.9rem", textDecoration: "none" }}>
               Go to My Learning
-              <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>arrow_forward</span>
+              <ArrowRight size={16} />
             </Link>
           </div>
         ) : (
@@ -101,12 +109,12 @@ function PaymentModal({ lessonTitle, tierLabel, price, onConfirm, onClose }: Pay
               <div>
                 <h3 style={{ fontFamily: "var(--font-headline)", fontSize: "1.25rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.25rem" }}>Complete Payment</h3>
                 <p style={{ fontFamily: "var(--font-label)", fontSize: "0.75rem", color: "var(--color-on-surface-variant)", margin: 0, display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: "0.875rem", color: "var(--color-secondary)" }}>shield</span>
+                  <Shield size={14} color="var(--color-secondary)" />
                   AUCA Escrow Protected
                 </p>
               </div>
               <button onClick={onClose} style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--color-on-surface-variant)", display: "flex", alignItems: "center" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "1.5rem" }}>close</span>
+                <X size={24} />
               </button>
             </div>
 
@@ -144,7 +152,7 @@ function PaymentModal({ lessonTitle, tierLabel, price, onConfirm, onClose }: Pay
             <label style={{ display: "block", marginBottom: "1rem" }}>
               <p style={{ fontFamily: "var(--font-label)", fontSize: "0.75rem", fontWeight: 700, color: "var(--color-on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 0.375rem" }}>Mobile Number</p>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 0.875rem", borderRadius: "0.625rem", border: "1.5px solid var(--color-outline-variant)", backgroundColor: "var(--color-surface-container-lowest)", transition: "border-color 0.15s" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "1.1rem", color: "var(--color-outline)" }}>phone</span>
+              <Phone size={18} color="var(--color-outline)" />
                 <input
                   type="tel"
                   value={phone}
@@ -156,7 +164,7 @@ function PaymentModal({ lessonTitle, tierLabel, price, onConfirm, onClose }: Pay
 
             {/* Escrow note */}
             <p style={{ fontFamily: "var(--font-body)", fontSize: "0.8rem", color: "var(--color-on-surface-variant)", backgroundColor: "rgba(108,248,187,0.12)", borderRadius: "0.5rem", padding: "0.625rem 0.75rem", marginBottom: "1.25rem", display: "flex", alignItems: "flex-start", gap: "0.375rem" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "1rem", color: "var(--color-secondary)", flexShrink: 0 }}>lock</span>
+              <Lock size={16} color="var(--color-secondary)" />
               Your funds are held in the <strong style={{ color: "var(--color-on-surface)" }}>AMANOTA Escrow Vault</strong> and released to the tutor only after session completion.
             </p>
 
@@ -167,8 +175,7 @@ function PaymentModal({ lessonTitle, tierLabel, price, onConfirm, onClose }: Pay
               onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-on-primary-fixed-variant)"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-primary)"; }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: "1.25rem" }}>lock</span>
-              Confirm Payment — {price.toLocaleString()} RWF
+              <Lock size={20} color="var(--color-on-primary)" />
             </button>
           </>
         )}
@@ -257,7 +264,7 @@ export default function LessonPage() {
         <Header />
         <main style={{ paddingTop: "5rem", minHeight: "100vh", backgroundColor: "var(--color-surface)", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ textAlign: "center" }}>
-            <span className="material-symbols-outlined" style={{ fontSize: "3rem", color: "var(--color-outline)", display: "block", marginBottom: "1rem" }}>search_off</span>
+            <SearchX size={48} color="var(--color-outline)" />
             <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1.5rem", color: "var(--color-on-surface)", marginBottom: "0.75rem" }}>Lesson not found</h2>
             <Link href="/" style={{ color: "var(--color-primary)", fontFamily: "var(--font-label)", fontWeight: 600 }}>← Back to Explore</Link>
           </div>
@@ -279,9 +286,9 @@ export default function LessonPage() {
           {/* Breadcrumb */}
           <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.5rem", fontFamily: "var(--font-label)", fontSize: "0.8rem", color: "var(--color-on-surface-variant)" }}>
             <Link href="/" style={{ color: "var(--color-primary)", textDecoration: "none", fontWeight: 600 }}>Explore</Link>
-            <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>chevron_right</span>
+            <ChevronRight size={16} />
             <span>{lesson.faculty}</span>
-            <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>chevron_right</span>
+            <ChevronRight size={16} />
             <span style={{ color: "var(--color-on-surface)", fontWeight: 600 }} className="line-clamp-1">{lesson.title}</span>
           </div>
 
@@ -298,7 +305,7 @@ export default function LessonPage() {
                 )}
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
                   <button style={{ width: "5rem", height: "5rem", borderRadius: "9999px", backgroundColor: "rgba(79,70,229,0.92)", border: "3px solid rgba(255,255,255,0.3)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem", backdropFilter: "blur(8px)" }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: "2.5rem", color: "white", fontVariationSettings: "'FILL' 1", paddingLeft: "0.25rem" }}>play_arrow</span>
+                    <PlayCircle size={40} color="white" />
                   </button>
                   <span style={{ fontFamily: "var(--font-label)", fontSize: "0.8rem", color: "rgba(255,255,255,0.7)", backgroundColor: "rgba(0,0,0,0.4)", padding: "0.375rem 0.875rem", borderRadius: "9999px", backdropFilter: "blur(8px)" }}>
                     {lesson.duration} · {lesson.courseCode}
@@ -312,7 +319,7 @@ export default function LessonPage() {
                   <span style={{ padding: "0.25rem 0.75rem", borderRadius: "9999px", backgroundColor: lesson.courseCodeColor === "secondary" ? "var(--color-secondary)" : "var(--color-primary)", color: lesson.courseCodeColor === "secondary" ? "var(--color-on-secondary)" : "var(--color-on-primary)", fontFamily: "var(--font-label)", fontSize: "0.75rem", fontWeight: 700 }}>{lesson.courseCode}</span>
                   <span style={{ padding: "0.25rem 0.75rem", borderRadius: "9999px", backgroundColor: "var(--color-primary-fixed)", color: "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.75rem", fontWeight: 700 }}>{lesson.faculty.split("•")[0].trim()}</span>
                   <span style={{ padding: "0.25rem 0.75rem", borderRadius: "9999px", backgroundColor: "var(--color-surface-container)", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-label)", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: "0.9rem" }}>domain</span>
+                    <Building2 size={14} />
                     {lesson.campus === "both" ? "Masoro & Gishushu" : lesson.campus === "masoro" ? "Masoro Campus" : "Gishushu Campus"}
                   </span>
                 </div>
@@ -391,7 +398,7 @@ export default function LessonPage() {
                           style={{ display: "flex", alignItems: "flex-start", gap: "0.875rem", padding: "0.875rem", borderRadius: "0.75rem", border: `2px solid ${active ? "var(--color-primary)" : "var(--color-outline-variant)"}`, backgroundColor: active ? "rgba(226,223,255,0.25)" : "transparent", cursor: "pointer", textAlign: "left", transition: "all 0.15s" }}
                         >
                           <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "0.625rem", backgroundColor: active ? "var(--color-primary)" : "var(--color-surface-container)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: "1.375rem", color: active ? "var(--color-on-primary)" : "var(--color-on-surface-variant)" }}>{t.icon}</span>
+                            {TIER_ICONS[t.id]}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "0.5rem" }}>
@@ -465,7 +472,7 @@ export default function LessonPage() {
                 {/* Escrow note + CTA */}
                 <div style={{ padding: "1rem 1.25rem 1.25rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.625rem 0.75rem", borderRadius: "0.625rem", backgroundColor: "rgba(108,248,187,0.1)", marginBottom: "0.875rem" }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: "1rem", color: "var(--color-secondary)" }}>shield</span>
+                    <Shield size={16} color="var(--color-secondary)" />
                     <span style={{ fontFamily: "var(--font-body)", fontSize: "0.775rem", color: "var(--color-on-surface-variant)" }}>
                       Payment held in <strong style={{ color: "var(--color-on-surface)" }}>AMANOTA Escrow</strong> — released after session completion.
                     </span>
@@ -473,7 +480,7 @@ export default function LessonPage() {
 
                   {alreadyPurchased ? (
                     <div style={{ textAlign: "center", padding: "0.75rem", borderRadius: "0.75rem", backgroundColor: "var(--color-secondary-container)", color: "var(--color-on-secondary-container)", fontFamily: "var(--font-label)", fontSize: "0.9rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: "1.25rem" }}>check_circle</span>
+                      <CheckCircle2 size={20} />
                       Already purchased — <Link href="/my-learning" style={{ color: "var(--color-secondary)", textDecoration: "underline" }}>Go to My Learning</Link>
                     </div>
                   ) : (
@@ -483,13 +490,13 @@ export default function LessonPage() {
                       onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-on-primary-fixed-variant)"; }}
                       onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-primary)"; }}
                     >
-                      <span className="material-symbols-outlined" style={{ fontSize: "1.25rem" }}>lock</span>
+                      <Lock size={20} color="var(--color-on-primary)" />
                       Book &amp; Pay — {tierConfig.price.toLocaleString()} RWF
                     </button>
                   )}
 
                   <p style={{ fontFamily: "var(--font-label)", fontSize: "0.7rem", color: "var(--color-on-surface-variant)", textAlign: "center", margin: "0.625rem 0 0", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.25rem" }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: "0.875rem" }}>payments</span>
+                    <Banknote size={14} />
                     MTN MoMo &amp; Airtel Money accepted
                   </p>
                 </div>

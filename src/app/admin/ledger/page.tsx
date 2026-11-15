@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import { ArrowLeft, RefreshCw, AlertCircle, Loader2, Banknote, Heart, Receipt, BarChart3, Layers } from "lucide-react";
 
 // ─── Types matching get_ledger_summary RPC output ────────────────────────────
 
@@ -108,7 +109,7 @@ export default function AdminLedgerPage() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
                 <Link href="/admin" style={{ display: "flex", alignItems: "center", gap: "0.25rem", color: "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 600, textDecoration: "none" }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>arrow_back</span>
+                  <ArrowLeft size={16} />
                   Admin
                 </Link>
                 <span style={{ color: "var(--color-outline)" }}>/</span>
@@ -125,7 +126,7 @@ export default function AdminLedgerPage() {
               onClick={fetchSummary}
               style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.5rem 1rem", borderRadius: "0.625rem", border: "none", cursor: "pointer", backgroundColor: "var(--color-surface-container-lowest)", color: "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 600, boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}
             >
-              <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>refresh</span>
+              <RefreshCw size={16} />
               Refresh
             </button>
           </div>
@@ -133,7 +134,7 @@ export default function AdminLedgerPage() {
           {/* ── Error ──────────────────────────────────────────────────── */}
           {error && (
             <div style={{ padding: "1rem 1.25rem", borderRadius: "0.75rem", backgroundColor: "var(--color-error-container)", color: "var(--color-on-error-container)", fontFamily: "var(--font-body)", fontSize: "0.9rem", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "1.25rem" }}>error</span>
+              <AlertCircle size={20} />
               {error}
               {error.includes("does not exist") && (
                 <span style={{ marginLeft: "0.5rem" }}>— Run <strong>run_step5_commission.sql</strong> in your Supabase SQL Editor first.</span>
@@ -144,7 +145,7 @@ export default function AdminLedgerPage() {
           {/* ── Loading ────────────────────────────────────────────────── */}
           {loading && (
             <div style={{ textAlign: "center", padding: "4rem", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-body)" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "2.5rem", display: "block", marginBottom: "0.75rem", color: "var(--color-primary)" }}>hourglass_top</span>
+              <Loader2 size={40} color="var(--color-primary)" style={{ display: "block", marginBottom: "0.75rem" }} />
               Loading ledger data…
             </div>
           )}
@@ -158,28 +159,28 @@ export default function AdminLedgerPage() {
                     label: "Gross Platform Revenue",
                     value: `${fmt(summary.total_gross)} RWF`,
                     sub: "Total student payments",
-                    icon: "payments", iconBg: "var(--color-primary-fixed)", iconColor: "var(--color-primary)",
+                    iconNode: <Banknote size={22} color="var(--color-primary)" />, iconBg: "var(--color-primary-fixed)",
                     highlight: false,
                   },
                   {
                     label: "AMANOTA Net Revenue (20%)",
                     value: `${fmt(summary.total_platform)} RWF`,
                     sub: `${summary.net_margin_pct}% net margin`,
-                    icon: "account_balance", iconBg: "var(--color-primary)", iconColor: "white",
+                    iconNode: <Banknote size={22} color="white" />, iconBg: "var(--color-primary)",
                     highlight: true,
                   },
                   {
                     label: "Total Tutor Payouts (80%)",
                     value: `${fmt(summary.total_tutor)} RWF`,
                     sub: "Credited to instructor wallets",
-                    icon: "volunteer_activism", iconBg: "var(--color-secondary-container)", iconColor: "var(--color-secondary)",
+                    iconNode: <Heart size={22} color="var(--color-secondary)" />, iconBg: "var(--color-secondary-container)",
                     highlight: false,
                   },
                   {
                     label: "Total Transactions",
                     value: String(summary.recent.length > 0 ? summary.by_faculty.reduce((s, f) => s + f.transaction_count, 0) : 0),
                     sub: "Across all faculties & tiers",
-                    icon: "receipt_long", iconBg: "var(--color-surface-container-highest)", iconColor: "var(--color-on-surface-variant)",
+                    iconNode: <Receipt size={22} color="var(--color-on-surface-variant)" />, iconBg: "var(--color-surface-container-highest)",
                     highlight: false,
                   },
                 ].map((kpi) => (
@@ -193,7 +194,7 @@ export default function AdminLedgerPage() {
                       <p style={{ fontFamily: "var(--font-body)", fontSize: "0.75rem", color: kpi.highlight ? "rgba(255,255,255,0.65)" : "var(--color-on-surface-variant)", margin: 0 }}>{kpi.sub}</p>
                     </div>
                     <div style={{ width: "2.75rem", height: "2.75rem", borderRadius: "0.75rem", backgroundColor: kpi.highlight ? "rgba(255,255,255,0.2)" : kpi.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: "1.4rem", color: kpi.highlight ? "white" : kpi.iconColor }}>{kpi.icon}</span>
+                      {kpi.iconNode}
                     </div>
                   </div>
                 ))}
@@ -225,7 +226,7 @@ export default function AdminLedgerPage() {
               {tab === "faculty" && (
                 <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                   <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--color-outline-variant)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: "1.25rem", color: "var(--color-primary)" }}>bar_chart</span>
+                    <BarChart3 size={20} color="var(--color-primary)" />
                     <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0 }}>Revenue by AUCA Faculty</h2>
                   </div>
                   {summary.by_faculty.length === 0 ? (
@@ -310,7 +311,7 @@ export default function AdminLedgerPage() {
               {tab === "tier" && (
                 <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                   <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--color-outline-variant)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: "1.25rem", color: "var(--color-secondary)" }}>layers</span>
+                    <Layers size={20} color="var(--color-secondary)" />
                     <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0 }}>Revenue by Booking Tier</h2>
                   </div>
                   {summary.by_tier.length === 0 ? (
@@ -363,7 +364,7 @@ export default function AdminLedgerPage() {
                 <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                   <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--color-outline-variant)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: "1.25rem", color: "var(--color-primary)" }}>receipt_long</span>
+                      <Receipt size={20} color="var(--color-primary)" />
                       <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0 }}>Recent Transactions</h2>
                     </div>
                     <span style={{ fontFamily: "var(--font-label)", fontSize: "0.75rem", color: "var(--color-on-surface-variant)" }}>Last {summary.recent.length} records</span>
@@ -419,7 +420,7 @@ export default function AdminLedgerPage() {
 function EmptyState({ msg }: { msg: string }) {
   return (
     <div style={{ textAlign: "center", padding: "3rem 2rem" }}>
-      <span className="material-symbols-outlined" style={{ fontSize: "2.5rem", color: "var(--color-outline)", display: "block", marginBottom: "0.75rem" }}>receipt_long</span>
+      <Receipt size={40} color="var(--color-outline)" style={{ display: "block", marginBottom: "0.75rem" }} />
       <p style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem", color: "var(--color-on-surface-variant)", maxWidth: "28rem", margin: "0 auto" }}>{msg}</p>
     </div>
   );

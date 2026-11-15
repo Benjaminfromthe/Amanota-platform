@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import {
+  GraduationCap, UserPlus, LogIn, X, ArrowLeft,
+  ShieldCheck, MailCheck, AlertCircle, Send, Loader2,
+} from "lucide-react";
 import { getSupabaseClient } from "@/lib/supabase";
 import type { Faculty, Campus } from "@/context/AppContext";
 
@@ -21,35 +25,28 @@ export default function OnboardingModal({ onClose, reason, onSuccess }: Props) {
   const sb = getSupabaseClient();
   const [mode, setMode] = useState<Mode>("choose");
 
-  // ── Register fields ───────────────────────────────────────────────────
   const [name,      setName]      = useState("");
   const [studentId, setStudentId] = useState("");
   const [email,     setEmail]     = useState("");
   const [faculty,   setFaculty]   = useState<Faculty>("Software Engineering");
   const [campus,    setCampus]    = useState<Exclude<Campus, "both">>("masoro");
   const [role,      setRole]      = useState<"student" | "tutor">("student");
+  const [siEmail,   setSiEmail]   = useState("");
+  const [loading,   setLoading]   = useState(false);
+  const [error,     setError]     = useState("");
+  const [success,   setSuccess]   = useState("");
 
-  // ── Sign-in field ─────────────────────────────────────────────────────
-  const [siEmail, setSiEmail] = useState("");
-
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState("");
-  const [success, setSuccess] = useState("");
-
-  // ── Register ──────────────────────────────────────────────────────────
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim())                              { setError("Full name is required."); return; }
-    if (!/^\d{4,6}$/.test(studentId.trim()))      { setError("AUCA Student ID must be 4–6 digits (e.g. 28318)."); return; }
-    if (!email.trim() || !email.includes("@"))    { setError("A valid email address is required."); return; }
+    if (!name.trim())                           { setError("Full name is required."); return; }
+    if (!/^\d{4,6}$/.test(studentId.trim()))   { setError("AUCA Student ID must be 4–6 digits."); return; }
+    if (!email.trim() || !email.includes("@")) { setError("A valid email address is required."); return; }
     setError(""); setLoading(true);
 
     const { error: signUpError } = await sb.auth.signUp({
       email: email.trim().toLowerCase(),
       password: `AUCA-${studentId.trim()}-${name.trim().split(" ")[0]}`,
-      options: {
-        data: { full_name: name.trim(), student_id: studentId.trim(), faculty, campus, role },
-      },
+      options: { data: { full_name: name.trim(), student_id: studentId.trim(), faculty, campus, role } },
     });
 
     setLoading(false);
@@ -58,7 +55,6 @@ export default function OnboardingModal({ onClose, reason, onSuccess }: Props) {
     onSuccess?.();
   };
 
-  // ── Sign-in: magic link ───────────────────────────────────────────────
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!siEmail.trim()) { setError("Enter your email address."); return; }
@@ -71,7 +67,7 @@ export default function OnboardingModal({ onClose, reason, onSuccess }: Props) {
 
     setLoading(false);
     if (signInError) { setError(signInError.message); return; }
-    setSuccess(`Magic link sent to ${siEmail.trim()} — check your inbox and click the link.`);
+    setSuccess(`Magic link sent to ${siEmail.trim()} — check your inbox.`);
     setTimeout(onClose, 5000);
   };
 
@@ -80,60 +76,60 @@ export default function OnboardingModal({ onClose, reason, onSuccess }: Props) {
       style={{ position: "fixed", inset: 0, zIndex: 300, backgroundColor: "rgba(15,23,42,0.65)", backdropFilter: "blur(10px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1rem" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1.5rem", width: "100%", maxWidth: "28rem", boxShadow: "0 25px 50px -12px rgba(30,41,59,0.3)", overflow: "hidden", maxHeight: "90vh", overflowY: "auto" }}>
+      <div style={{ backgroundColor: "white", borderRadius: "1.25rem", width: "100%", maxWidth: "27rem", boxShadow: "0 24px 48px -8px rgba(30,41,59,0.28)", overflow: "hidden", maxHeight: "90vh", overflowY: "auto" }}>
 
-        {/* ── Header band ── */}
-        <div style={{ background: "linear-gradient(135deg, var(--color-primary) 0%, #4f46e5 100%)", padding: "1.5rem 1.75rem 1.25rem", position: "sticky", top: 0, zIndex: 1 }}>
+        {/* Header band */}
+        <div style={{ background: "linear-gradient(135deg, #1e1b4b 0%, var(--color-primary) 100%)", padding: "1.375rem 1.5rem 1.125rem" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.25rem" }}>
-                <span className="material-symbols-outlined" style={{ color: "rgba(255,255,255,0.9)", fontSize: "1.5rem" }}>school</span>
-                <span style={{ fontFamily: "var(--font-headline)", fontSize: "1.1rem", fontWeight: 700, color: "white" }}>AMANOTA</span>
+                <GraduationCap size={18} color="rgba(255,255,255,0.9)" />
+                <span style={{ fontFamily: "var(--font-headline)", fontSize: "1.0625rem", fontWeight: 700, color: "white" }}>AMANOTA</span>
               </div>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.825rem", color: "rgba(255,255,255,0.75)", margin: 0 }}>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.825rem", color: "rgba(255,255,255,0.72)", margin: 0 }}>
                 {reason ?? "AUCA Peer Academic Network"}
               </p>
             </div>
-            <button onClick={onClose} style={{ border: "none", background: "rgba(255,255,255,0.15)", borderRadius: "0.5rem", cursor: "pointer", color: "white", width: "2rem", height: "2rem", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "1.25rem" }}>close</span>
+            <button onClick={onClose} style={{ border: "none", background: "rgba(255,255,255,0.15)", borderRadius: "0.4375rem", cursor: "pointer", color: "white", width: "30px", height: "30px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <X size={16} />
             </button>
           </div>
         </div>
 
-        <div style={{ padding: "1.5rem 1.75rem" }}>
+        <div style={{ padding: "1.375rem 1.5rem" }}>
 
-          {/* ── Success state ── */}
+          {/* Success */}
           {success && (
             <div style={{ textAlign: "center", padding: "1.5rem 0" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "3rem", color: "var(--color-secondary)", display: "block", marginBottom: "0.75rem", fontVariationSettings: "'FILL' 1" }}>mark_email_read</span>
-              <h3 style={{ fontFamily: "var(--font-headline)", fontSize: "1.2rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.5rem" }}>Check your email!</h3>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--color-on-surface-variant)", margin: 0, lineHeight: 1.6 }}>{success}</p>
-              <button onClick={onClose} style={{ marginTop: "1.25rem", padding: "0.5rem 1.5rem", borderRadius: "0.75rem", border: "none", cursor: "pointer", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontFamily: "var(--font-label)", fontWeight: 600 }}>
-                Close
-              </button>
+              <div style={{ width: "56px", height: "56px", borderRadius: "50%", backgroundColor: "rgba(0,108,73,0.1)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 0.875rem" }}>
+                <MailCheck size={28} color="var(--color-secondary)" />
+              </div>
+              <h3 style={{ fontFamily: "var(--font-headline)", fontSize: "1.125rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.5rem" }}>Check your email!</h3>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--color-on-surface-variant)", margin: "0 0 1.125rem", lineHeight: 1.65 }}>{success}</p>
+              <button onClick={onClose} style={{ padding: "0.5rem 1.5rem", borderRadius: "0.5rem", border: "none", cursor: "pointer", backgroundColor: "var(--color-primary)", color: "white", fontFamily: "var(--font-label)", fontWeight: 700 }}>Close</button>
             </div>
           )}
 
-          {/* ── Choose mode ── */}
+          {/* Choose mode */}
           {!success && mode === "choose" && (
             <div>
-              <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1.2rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.375rem" }}>Join AMANOTA</h2>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--color-on-surface-variant)", margin: "0 0 1.25rem" }}>
+              <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1.125rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.375rem" }}>Join AMANOTA</h2>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--color-on-surface-variant)", margin: "0 0 1.125rem" }}>
                 Sign in or create an account with your real email address.
               </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                <ModeBtn icon="person_add" title="Create New Account" sub="Register with your AUCA Student ID" accent onClick={() => setMode("register")} />
-                <ModeBtn icon="login" title="Sign In" sub="Send a magic link to your email" onClick={() => setMode("signin")} />
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.625rem" }}>
+                <ModeBtn icon={<UserPlus size={18} color="white" />} title="Create New Account" sub="Register with your AUCA Student ID" accent onClick={() => setMode("register")} />
+                <ModeBtn icon={<LogIn size={18} color="var(--color-on-surface-variant)" />} title="Sign In" sub="Send a magic link to your email" onClick={() => setMode("signin")} />
               </div>
-              <div style={{ display: "flex", gap: "0.5rem", marginTop: "1.25rem", flexWrap: "wrap" }}>
+              <div style={{ display: "flex", gap: "0.375rem", marginTop: "1.125rem", flexWrap: "wrap" }}>
                 {["AUCA Verified", "Supabase Auth", "80/20 Escrow"].map((b) => (
-                  <span key={b} style={{ padding: "0.25rem 0.625rem", borderRadius: "9999px", backgroundColor: "var(--color-surface-container)", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 600 }}>{b}</span>
+                  <span key={b} style={{ padding: "0.1875rem 0.5625rem", borderRadius: "9999px", backgroundColor: "var(--color-surface-container)", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-label)", fontSize: "0.675rem", fontWeight: 600 }}>{b}</span>
                 ))}
               </div>
             </div>
           )}
 
-          {/* ── Register form ── */}
+          {/* Register form */}
           {!success && mode === "register" && (
             <form onSubmit={handleRegister} style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
               <BackBtn onClick={() => { setMode("choose"); setError(""); }} label="Create AUCA Account" />
@@ -141,19 +137,14 @@ export default function OnboardingModal({ onClose, reason, onSuccess }: Props) {
               <Field label="Full Name *">
                 <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Benjamin Nshimiye" style={inp} required />
               </Field>
-
               <Field label="AUCA Student ID *">
                 <input type="text" inputMode="numeric" value={studentId} onChange={(e) => setStudentId(e.target.value.replace(/\D/g, ""))} placeholder="e.g. 28318" maxLength={6} style={inp} required />
               </Field>
-
               <Field label="Your Email Address *">
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="e.g. youremail@gmail.com" style={inp} required />
-                <p style={{ fontFamily: "var(--font-body)", fontSize: "0.73rem", color: "var(--color-on-surface-variant)", margin: "0.25rem 0 0" }}>
-                  Supabase will send a confirmation link here.
-                </p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: "0.725rem", color: "var(--color-on-surface-variant)", margin: "0.25rem 0 0" }}>Confirmation link will be sent here.</p>
               </Field>
-
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.625rem" }}>
                 <Field label="Faculty">
                   <select value={faculty} onChange={(e) => setFaculty(e.target.value as Faculty)} style={inp}>
                     {FACULTIES.map((f) => <option key={f} value={f}>{f}</option>)}
@@ -166,43 +157,35 @@ export default function OnboardingModal({ onClose, reason, onSuccess }: Props) {
                   </select>
                 </Field>
               </div>
-
               <Field label="I am a">
                 <div style={{ display: "flex", gap: "0.5rem" }}>
                   {(["student", "tutor"] as const).map((r) => (
                     <button key={r} type="button" onClick={() => setRole(r)}
-                      style={{ flex: 1, padding: "0.5rem", borderRadius: "0.5rem", border: `2px solid ${role === r ? "var(--color-primary)" : "var(--color-outline-variant)"}`, backgroundColor: role === r ? "rgba(226,223,255,0.2)" : "transparent", cursor: "pointer", fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 700, color: role === r ? "var(--color-primary)" : "var(--color-on-surface-variant)", textTransform: "capitalize" }}>
+                      style={{ flex: 1, padding: "0.5rem", borderRadius: "0.5rem", border: `2px solid ${role === r ? "var(--color-primary)" : "var(--color-outline-variant)"}`, backgroundColor: role === r ? "rgba(226,223,255,0.2)" : "transparent", cursor: "pointer", fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 700, color: role === r ? "var(--color-primary)" : "var(--color-on-surface-variant)", textTransform: "capitalize" }}>
                       {r}
                     </button>
                   ))}
                 </div>
               </Field>
-
               {error && <ErrMsg msg={error} />}
-
-              <button type="submit" disabled={loading} style={{ ...btnSt, opacity: loading ? 0.7 : 1 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "1.1rem" }}>{loading ? "hourglass_empty" : "verified_user"}</span>
+              <button type="submit" disabled={loading} style={{ ...btnSt, opacity: loading ? 0.72 : 1 }}>
+                {loading ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> : <ShieldCheck size={16} />}
                 {loading ? "Creating account…" : "Create AUCA Account"}
               </button>
             </form>
           )}
 
-          {/* ── Sign-in form ── */}
+          {/* Sign-in form */}
           {!success && mode === "signin" && (
             <form onSubmit={handleSignIn} style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
               <BackBtn onClick={() => { setMode("choose"); setError(""); }} label="Sign In" />
-
               <Field label="Your Email Address">
                 <input type="email" value={siEmail} onChange={(e) => setSiEmail(e.target.value)} placeholder="e.g. youremail@gmail.com" style={inp} required />
-                <p style={{ fontFamily: "var(--font-body)", fontSize: "0.73rem", color: "var(--color-on-surface-variant)", margin: "0.25rem 0 0" }}>
-                  We&apos;ll send a magic link — no password needed.
-                </p>
+                <p style={{ fontFamily: "var(--font-body)", fontSize: "0.725rem", color: "var(--color-on-surface-variant)", margin: "0.25rem 0 0" }}>We&apos;ll send a magic link — no password needed.</p>
               </Field>
-
               {error && <ErrMsg msg={error} />}
-
-              <button type="submit" disabled={loading} style={{ ...btnSt, opacity: loading ? 0.7 : 1 }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "1.1rem" }}>{loading ? "hourglass_empty" : "send"}</span>
+              <button type="submit" disabled={loading} style={{ ...btnSt, opacity: loading ? 0.72 : 1 }}>
+                {loading ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> : <Send size={16} />}
                 {loading ? "Sending…" : "Send Magic Link"}
               </button>
             </form>
@@ -214,17 +197,13 @@ export default function OnboardingModal({ onClose, reason, onSuccess }: Props) {
   );
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function ModeBtn({ icon, title, sub, accent, onClick }: { icon: string; title: string; sub: string; accent?: boolean; onClick: () => void }) {
+function ModeBtn({ icon, title, sub, accent, onClick }: { icon: React.ReactNode; title: string; sub: string; accent?: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "1rem", borderRadius: "0.875rem", border: `2px solid ${accent ? "var(--color-primary)" : "var(--color-outline-variant)"}`, backgroundColor: accent ? "rgba(226,223,255,0.1)" : "transparent", cursor: "pointer", textAlign: "left", width: "100%" }}>
-      <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "0.625rem", backgroundColor: accent ? "var(--color-primary)" : "var(--color-surface-container)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <span className="material-symbols-outlined" style={{ color: accent ? "white" : "var(--color-on-surface-variant)", fontSize: "1.375rem" }}>{icon}</span>
-      </div>
+    <button onClick={onClick} style={{ display: "flex", alignItems: "center", gap: "0.75rem", padding: "0.875rem", borderRadius: "0.75rem", border: `2px solid ${accent ? "var(--color-primary)" : "var(--color-outline-variant)"}`, backgroundColor: accent ? "rgba(226,223,255,0.08)" : "transparent", cursor: "pointer", textAlign: "left", width: "100%", transition: "background 0.15s" }}>
+      <div style={{ width: "38px", height: "38px", borderRadius: "0.5rem", backgroundColor: accent ? "var(--color-primary)" : "var(--color-surface-container)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{icon}</div>
       <div>
-        <p style={{ fontFamily: "var(--font-label)", fontSize: "0.9rem", fontWeight: 700, color: accent ? "var(--color-primary)" : "var(--color-on-surface)", margin: "0 0 0.125rem" }}>{title}</p>
-        <p style={{ fontFamily: "var(--font-body)", fontSize: "0.8rem", color: "var(--color-on-surface-variant)", margin: 0 }}>{sub}</p>
+        <p style={{ fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 700, color: accent ? "var(--color-primary)" : "var(--color-on-surface)", margin: "0 0 0.125rem" }}>{title}</p>
+        <p style={{ fontFamily: "var(--font-body)", fontSize: "0.775rem", color: "var(--color-on-surface-variant)", margin: 0 }}>{sub}</p>
       </div>
     </button>
   );
@@ -233,10 +212,10 @@ function ModeBtn({ icon, title, sub, accent, onClick }: { icon: string; title: s
 function BackBtn({ onClick, label }: { onClick: () => void; label: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-      <button type="button" onClick={onClick} style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--color-primary)", display: "flex", alignItems: "center", gap: "0.25rem", fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 600, padding: 0 }}>
-        <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>arrow_back</span> Back
+      <button type="button" onClick={onClick} style={{ border: "none", background: "transparent", cursor: "pointer", color: "var(--color-primary)", display: "flex", alignItems: "center", gap: "0.1875rem", fontFamily: "var(--font-label)", fontSize: "0.775rem", fontWeight: 600, padding: 0 }}>
+        <ArrowLeft size={14} /> Back
       </button>
-      <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1.1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0 }}>{label}</h2>
+      <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1.0625rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0 }}>{label}</h2>
     </div>
   );
 }
@@ -244,7 +223,7 @@ function BackBtn({ onClick, label }: { onClick: () => void; label: string }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label style={{ display: "block" }}>
-      <p style={{ fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 700, color: "var(--color-on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 0.375rem" }}>{label}</p>
+      <p style={{ fontFamily: "var(--font-label)", fontSize: "0.675rem", fontWeight: 700, color: "var(--color-on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.06em", margin: "0 0 0.3125rem" }}>{label}</p>
       {children}
     </label>
   );
@@ -252,25 +231,12 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 function ErrMsg({ msg }: { msg: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "flex-start", gap: "0.375rem", padding: "0.625rem 0.75rem", borderRadius: "0.5rem", backgroundColor: "var(--color-error-container)", color: "var(--color-on-error-container)" }}>
-      <span className="material-symbols-outlined" style={{ fontSize: "1rem", flexShrink: 0 }}>error</span>
+    <div style={{ display: "flex", alignItems: "flex-start", gap: "0.375rem", padding: "0.5625rem 0.75rem", borderRadius: "0.5rem", backgroundColor: "var(--color-error-container)", color: "var(--color-on-error-container)" }}>
+      <AlertCircle size={15} style={{ flexShrink: 0, marginTop: "1px" }} />
       <span style={{ fontFamily: "var(--font-body)", fontSize: "0.8rem" }}>{msg}</span>
     </div>
   );
 }
 
-const inp: React.CSSProperties = {
-  width: "100%", padding: "0.625rem 0.875rem", borderRadius: "0.5rem",
-  border: "1.5px solid var(--color-outline-variant)",
-  backgroundColor: "var(--color-surface-container-lowest)",
-  fontFamily: "var(--font-body)", fontSize: "0.9rem",
-  color: "var(--color-on-surface)", outline: "none", boxSizing: "border-box",
-};
-
-const btnSt: React.CSSProperties = {
-  width: "100%", padding: "0.75rem", borderRadius: "0.75rem", border: "none",
-  cursor: "pointer", backgroundColor: "var(--color-primary)",
-  color: "var(--color-on-primary)", fontFamily: "var(--font-label)",
-  fontSize: "0.95rem", fontWeight: 700,
-  display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem",
-};
+const inp: React.CSSProperties = { width: "100%", padding: "0.5625rem 0.8125rem", borderRadius: "0.5rem", border: "1.5px solid var(--color-outline-variant)", backgroundColor: "white", fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--color-on-surface)", outline: "none", boxSizing: "border-box" };
+const btnSt: React.CSSProperties = { width: "100%", padding: "0.6875rem", borderRadius: "0.625rem", border: "none", cursor: "pointer", backgroundColor: "var(--color-primary)", color: "white", fontFamily: "var(--font-label)", fontSize: "0.9375rem", fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" };

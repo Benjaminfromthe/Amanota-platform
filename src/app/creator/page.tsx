@@ -8,6 +8,7 @@ import { useApp } from "@/context/AppContext";
 import { getSupabaseClient } from "@/lib/supabase";
 import { insertLesson, getLessonsByCreator, getWalletTransactions, getWallet } from "@/lib/db";
 import type { Campus, Faculty, Tier } from "@/context/AppContext";
+import { Upload, AlertCircle, CheckCircle2, Library, Receipt, Wallet, Info } from "lucide-react";
 
 const FACULTIES: Faculty[] = [
   "Software Engineering", "Networking", "Information Management",
@@ -110,7 +111,7 @@ export default function CreatorPage() {
         {/* Toast */}
         {toast && (
           <div style={{ position: "fixed", top: "6rem", right: "1.5rem", zIndex: 300, backgroundColor: toast.startsWith("Please") ? "var(--color-error-container)" : "var(--color-secondary-container)", color: toast.startsWith("Please") ? "var(--color-on-error-container)" : "var(--color-on-secondary-container)", padding: "0.75rem 1.25rem", borderRadius: "0.75rem", fontFamily: "var(--font-label)", fontSize: "0.9rem", fontWeight: 600, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", display: "flex", alignItems: "center", gap: "0.5rem", maxWidth: "24rem" }}>
-            <span className="material-symbols-outlined" style={{ fontSize: "1.25rem" }}>{toast.startsWith("Please") ? "error" : "check_circle"}</span>
+            {toast.startsWith("Please") ? <AlertCircle size={20} /> : <CheckCircle2 size={20} />}
             {toast}
           </div>
         )}
@@ -129,7 +130,7 @@ export default function CreatorPage() {
             <div>
               <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", padding: "1.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", marginBottom: "1.5rem" }}>
                 <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1.1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 1.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: "1.375rem", color: "var(--color-primary)" }}>upload</span>
+                  <Upload size={22} color="var(--color-primary)" />
                   Upload a New Lesson
                 </h2>
                 <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -193,7 +194,7 @@ export default function CreatorPage() {
                     onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-on-primary-fixed-variant)"; }}
                     onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-primary)"; }}
                   >
-                    <span className="material-symbols-outlined" style={{ fontSize: "1.25rem" }}>publish</span>
+                    <Upload size={20} />
                     Publish Lesson
                   </button>
                 </form>
@@ -203,7 +204,7 @@ export default function CreatorPage() {
               {(displayedLessons ?? creatorLessons).length > 0 && (
                 <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", padding: "1.5rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                   <h3 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 1rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: "1.25rem", color: "var(--color-secondary)" }}>library_books</span>
+                    <Library size={20} color="var(--color-secondary)" />
                     My Uploaded Lessons ({(displayedLessons ?? creatorLessons).length})
                   </h3>
                   <div style={{ overflowX: "auto" }}>
@@ -242,7 +243,7 @@ export default function CreatorPage() {
                   <p style={{ fontFamily: "var(--font-label)", fontSize: "0.65rem", fontWeight: 700, color: "var(--color-on-surface-variant)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 0.25rem" }}>Your Balance (80%)</p>
                   <p style={{ fontFamily: "var(--font-headline)", fontSize: "1.375rem", fontWeight: 700, color: "var(--color-primary)", margin: "0 0 0.25rem" }}>{walletBalance.toLocaleString()} <span style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--color-on-surface-variant)" }}>RWF</span></p>
                   <p style={{ fontFamily: "var(--font-body)", fontSize: "0.75rem", color: "var(--color-secondary)", margin: 0, display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: "0.875rem" }}>account_balance_wallet</span>
+                    <Wallet size={14} />
                     MTN MoMo / Airtel
                   </p>
                 </div>
@@ -255,7 +256,7 @@ export default function CreatorPage() {
 
               {/* Info box */}
               <div style={{ backgroundColor: "rgba(226,223,255,0.3)", borderRadius: "0.875rem", padding: "0.875rem 1rem", display: "flex", gap: "0.75rem" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "1.375rem", color: "var(--color-primary)", flexShrink: 0 }}>info</span>
+                <Info size={22} color="var(--color-primary)" style={{ flexShrink: 0 }} />
                 <p style={{ fontFamily: "var(--font-body)", fontSize: "0.8rem", color: "var(--color-on-surface-variant)", margin: 0, lineHeight: 1.6 }}>
                   <strong style={{ color: "var(--color-primary)" }}>80/20 Revenue Split:</strong> Every purchase credits 80% directly to your MTN MoMo or Airtel Money wallet within 24 hours of session completion. AMANOTA retains 20% as a platform guarantee fee.
                 </p>
@@ -265,7 +266,7 @@ export default function CreatorPage() {
               <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                 <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--color-outline-variant)" }}>
                   <h3 style={{ fontFamily: "var(--font-headline)", fontSize: "0.9375rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: "1.1rem", color: "var(--color-secondary)" }}>receipt_long</span>
+                    <Receipt size={18} color="var(--color-secondary)" />
                     Transaction Ledger
                   </h3>
                 </div>

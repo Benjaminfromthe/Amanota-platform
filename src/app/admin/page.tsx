@@ -8,6 +8,7 @@ import { useApp } from "@/context/AppContext";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getAdminRevenueSummary, getLessonCountByFaculty, getWalletTransactions } from "@/lib/db";
 import type { Faculty } from "@/context/AppContext";
+import { Settings, Receipt, ArrowLeft, Banknote, ArrowLeftRight, ShoppingBag, CalendarCheck, BarChart3, Users } from "lucide-react";
 
 const FACULTIES: Faculty[] = [
   "Software Engineering",
@@ -104,7 +105,7 @@ export default function AdminPage() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "0.5rem" }}>
                 <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "0.75rem", backgroundColor: "var(--color-primary)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span className="material-symbols-outlined" style={{ color: "white", fontSize: "1.4rem" }}>admin_panel_settings</span>
+                  <Settings size={22} color="white" />
                 </div>
                 <div>
                   <h1 style={{ fontFamily: "var(--font-headline)", fontSize: "1.5rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0, letterSpacing: "-0.01em" }}>Platform Ledger</h1>
@@ -114,11 +115,11 @@ export default function AdminPage() {
             </div>
             <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
               <Link href="/admin/ledger" style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.5rem 1rem", borderRadius: "0.625rem", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 600, textDecoration: "none", boxShadow: "0 2px 8px rgba(53,37,205,0.2)" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>receipt_long</span>
+                <Receipt size={16} color="var(--color-on-primary)" />
                 Full Commission Ledger
               </Link>
               <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.5rem 1rem", borderRadius: "0.625rem", backgroundColor: "var(--color-surface-container-lowest)", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 600, textDecoration: "none", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>arrow_back</span>
+                <ArrowLeft size={16} />
                 Back to Explore
               </Link>
             </div>
@@ -127,12 +128,12 @@ export default function AdminPage() {
           {/* ── KPI bento ──────────────────────────────────────────────── */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
             {[
-              { label: "Platform Revenue (20%)", value: `${fmt(totalRevenue)} RWF`, icon: "account_balance", iconBg: "var(--color-primary-fixed)", iconColor: "var(--color-primary)", highlight: true },
-              { label: "Total Tutor Payouts (80%)", value: `${fmt(totalTutorPayout)} RWF`, icon: "payments", iconBg: "var(--color-secondary-container)", iconColor: "var(--color-secondary)", highlight: false },
-              { label: "Gross Merchandise Value", value: `${fmt(totalGMV)} RWF`, icon: "receipt_long", iconBg: "var(--color-surface-container-highest)", iconColor: "var(--color-on-surface-variant)", highlight: false },
-              { label: "Transactions", value: String(totalTransactions), icon: "swap_horiz", iconBg: "var(--color-surface-container-high)", iconColor: "var(--color-on-surface-variant)", highlight: false },
-              { label: "Total Purchases", value: String(totalPurchases), icon: "shopping_bag", iconBg: "var(--color-surface-container-high)", iconColor: "var(--color-on-surface-variant)", highlight: false },
-              { label: "Sessions Completed", value: `${completedBookings} / ${totalBookings}`, icon: "event_available", iconBg: "var(--color-secondary-container)", iconColor: "var(--color-secondary)", highlight: false },
+              { label: "Platform Revenue (20%)", value: `${fmt(totalRevenue)} RWF`, iconNode: <Banknote size={22} color="var(--color-primary)" />, iconBg: "var(--color-primary-fixed)", highlight: true },
+              { label: "Total Tutor Payouts (80%)", value: `${fmt(totalTutorPayout)} RWF`, iconNode: <Banknote size={22} color="var(--color-secondary)" />, iconBg: "var(--color-secondary-container)", highlight: false },
+              { label: "Gross Merchandise Value", value: `${fmt(totalGMV)} RWF`, iconNode: <Receipt size={22} color="var(--color-on-surface-variant)" />, iconBg: "var(--color-surface-container-highest)", highlight: false },
+              { label: "Transactions", value: String(totalTransactions), iconNode: <ArrowLeftRight size={22} color="var(--color-on-surface-variant)" />, iconBg: "var(--color-surface-container-high)", highlight: false },
+              { label: "Total Purchases", value: String(totalPurchases), iconNode: <ShoppingBag size={22} color="var(--color-on-surface-variant)" />, iconBg: "var(--color-surface-container-high)", highlight: false },
+              { label: "Sessions Completed", value: `${completedBookings} / ${totalBookings}`, iconNode: <CalendarCheck size={22} color="var(--color-secondary)" />, iconBg: "var(--color-secondary-container)", highlight: false },
             ].map((kpi) => (
               <div
                 key={kpi.label}
@@ -143,7 +144,7 @@ export default function AdminPage() {
                   <p style={{ fontFamily: "var(--font-headline)", fontSize: "1.25rem", fontWeight: 700, color: kpi.highlight ? "white" : "var(--color-on-surface)", margin: 0, lineHeight: 1.2 }}>{kpi.value}</p>
                 </div>
                 <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "0.625rem", backgroundColor: kpi.highlight ? "rgba(255,255,255,0.2)" : kpi.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: "1.375rem", color: kpi.highlight ? "white" : kpi.iconColor }}>{kpi.icon}</span>
+                  {kpi.iconNode}
                 </div>
               </div>
             ))}
@@ -155,7 +156,7 @@ export default function AdminPage() {
             {/* Faculty breakdown */}
             <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", padding: "1.5rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
               <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 1.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "1.25rem", color: "var(--color-primary)" }}>bar_chart</span>
+                <BarChart3 size={20} color="var(--color-primary)" />
                 Active Lessons by AUCA Faculty
               </h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
@@ -179,7 +180,7 @@ export default function AdminPage() {
             <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
               <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--color-outline-variant)" }}>
                 <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: "1.25rem", color: "var(--color-secondary)" }}>people</span>
+                  <Users size={20} color="var(--color-secondary)" />
                   Tutor Earnings Breakdown
                 </h2>
               </div>
@@ -224,7 +225,7 @@ export default function AdminPage() {
           <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
             <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--color-outline-variant)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <span className="material-symbols-outlined" style={{ fontSize: "1.25rem", color: "var(--color-primary)" }}>receipt_long</span>
+                <Receipt size={20} color="var(--color-primary)" />
                 Full Transaction Ledger
               </h2>
               <span style={{ fontFamily: "var(--font-label)", fontSize: "0.75rem", color: "var(--color-on-surface-variant)" }}>{walletTransactions.length} record{walletTransactions.length !== 1 ? "s" : ""}</span>

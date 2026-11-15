@@ -8,6 +8,7 @@ import { useApp } from "@/context/AppContext";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getBookingsByStudent } from "@/lib/db";
 import type { BookingStatus, TierType } from "@/lib/database.types";
+import { ShieldCheck, GraduationCap, CheckCircle2, Compass, PlusCircle, Monitor, Users, Wallet, History, Loader2, BookOpen, CalendarDays, Unlock, Clock, PlayCircle, Scale, MapPin, ArrowRight } from "lucide-react";
 
 type Tab = "lessons" | "upcoming" | "past";
 
@@ -79,10 +80,10 @@ export default function MyLearningPage() {
 
   const totalSpent = purchases.filter((p) => p.userId === currentUser.id).reduce((s, p) => s + p.pricePaid, 0);
 
-  const tabs: { id: Tab; label: string; icon: string; count: number }[] = [
-    { id: "lessons",  label: "Unlocked Lessons",         icon: "play_lesson",    count: unlockedLessons.length },
-    { id: "upcoming", label: "Upcoming Sessions",         icon: "event_upcoming", count: upcomingBookings.length },
-    { id: "past",     label: "Past Sessions",             icon: "history_edu",    count: pastBookings.length },
+  const tabs: { id: Tab; label: string; iconNode: React.ReactNode; count: number }[] = [
+    { id: "lessons",  label: "Unlocked Lessons",         iconNode: <BookOpen size={20} />,    count: unlockedLessons.length },
+    { id: "upcoming", label: "Upcoming Sessions",         iconNode: <CalendarDays size={20} />, count: upcomingBookings.length },
+    { id: "past",     label: "Past Sessions",             iconNode: <History size={20} />,      count: pastBookings.length },
   ];
 
   return (
@@ -102,7 +103,7 @@ export default function MyLearningPage() {
                     {currentUser.initials}
                   </div>
                   <div style={{ position: "absolute", bottom: "-0.25rem", right: "-0.25rem", width: "1.25rem", height: "1.25rem", borderRadius: "9999px", backgroundColor: "var(--color-secondary)", border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                    <span className="material-symbols-outlined" style={{ color: "var(--color-on-secondary)", fontSize: "0.75rem", fontVariationSettings: "'FILL' 1" }}>check</span>
+                    <CheckCircle2 size={10} color="var(--color-on-secondary)" />
                   </div>
                 </div>
                 <div>
@@ -110,12 +111,12 @@ export default function MyLearningPage() {
                     <h1 style={{ fontFamily: "var(--font-headline)", fontSize: "clamp(1.25rem, 3vw, 1.75rem)", fontWeight: 600, color: "var(--color-on-surface)", margin: 0, letterSpacing: "-0.01em" }}>{currentUser.name}</h1>
                     <span style={{ padding: "0.125rem 0.625rem", borderRadius: "9999px", backgroundColor: "var(--color-primary-fixed)", color: "var(--color-on-primary-fixed-variant)", fontFamily: "var(--font-label)", fontSize: "0.6875rem", fontWeight: 700 }}>AUCA Active Learner</span>
                     <span style={{ padding: "0.125rem 0.625rem", borderRadius: "9999px", backgroundColor: "var(--color-secondary-container)", color: "var(--color-on-secondary-container)", fontFamily: "var(--font-label)", fontSize: "0.6875rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                      <span className="material-symbols-outlined" style={{ fontSize: "0.8rem" }}>verified_user</span>
+                      <ShieldCheck size={11} />
                       AUCA Escrow Protected
                     </span>
                   </div>
                   <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--color-on-surface-variant)", margin: "0.25rem 0 0", display: "flex", alignItems: "center", gap: "0.375rem" }}>
-                    <span className="material-symbols-outlined" style={{ color: "var(--color-outline)", fontSize: "1.1rem" }}>school</span>
+                    <GraduationCap size={18} color="var(--color-outline)" />
                     AUCA • {currentUser.campus === "masoro" ? "Masoro Campus" : "Gishushu Campus"}
                     <span style={{ color: "var(--color-outline)" }}>•</span>
                     <span style={{ color: "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.75rem", fontWeight: 600 }}>{currentUser.email}</span>
@@ -125,11 +126,11 @@ export default function MyLearningPage() {
 
               <div style={{ display: "flex", gap: "0.75rem" }}>
                 <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", borderRadius: "0.5rem", backgroundColor: "var(--color-surface-container-lowest)", color: "var(--color-on-surface)", fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 600, textDecoration: "none", boxShadow: "0 1px 4px rgba(0,0,0,0.08)" }}>
-                  <span className="material-symbols-outlined" style={{ color: "var(--color-primary)", fontSize: "1.2rem" }}>explore</span>
+                  <Compass size={19} color="var(--color-primary)" />
                   Explore More
                 </Link>
                 <Link href="/lesson/comp201" style={{ display: "flex", alignItems: "center", gap: "0.5rem", padding: "0.5rem 1rem", borderRadius: "0.5rem", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 600, textDecoration: "none", boxShadow: "0 2px 8px rgba(53,37,205,0.25)" }}>
-                  <span className="material-symbols-outlined" style={{ fontSize: "1.2rem" }}>add_circle</span>
+                  <PlusCircle size={19} />
                   Book New Tutor
                 </Link>
               </div>
@@ -138,10 +139,10 @@ export default function MyLearningPage() {
             {/* Metrics bento */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "1rem", marginBottom: "1.5rem" }}>
               {[
-                { label: "Unlocked Lessons", value: `${unlockedLessons.length}`, sub: "Lifetime access", icon: "smart_display", iconBg: "var(--color-primary-fixed)", iconColor: "var(--color-primary)" },
-                { label: "Upcoming Sessions", value: `${upcomingBookings.length}`, sub: "Escrow protected", icon: "groups", iconBg: "var(--color-secondary-container)", iconColor: "var(--color-secondary)" },
-                { label: "Total Spent", value: `${totalSpent.toLocaleString()} RWF`, sub: "Escrow vault", icon: "account_balance_wallet", iconBg: "var(--color-primary-fixed)", iconColor: "var(--color-primary)" },
-                { label: "Past Sessions", value: `${pastBookings.length}`, sub: "Completed", icon: "history_edu", iconBg: "var(--color-surface-container-highest)", iconColor: "var(--color-primary)" },
+                { label: "Unlocked Lessons", value: `${unlockedLessons.length}`, sub: "Lifetime access", iconNode: <Monitor size={24} color="var(--color-primary)" />, iconBg: "var(--color-primary-fixed)" },
+                { label: "Upcoming Sessions", value: `${upcomingBookings.length}`, sub: "Escrow protected", iconNode: <Users size={24} color="var(--color-secondary)" />, iconBg: "var(--color-secondary-container)" },
+                { label: "Total Spent", value: `${totalSpent.toLocaleString()} RWF`, sub: "Escrow vault", iconNode: <Wallet size={24} color="var(--color-primary)" />, iconBg: "var(--color-primary-fixed)" },
+                { label: "Past Sessions", value: `${pastBookings.length}`, sub: "Completed", iconNode: <History size={24} color="var(--color-primary)" />, iconBg: "var(--color-surface-container-highest)" },
               ].map((m) => (
                 <div key={m.label} style={{ backgroundColor: "var(--color-surface-container-lowest)", padding: "1rem", borderRadius: "1rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div>
@@ -150,7 +151,7 @@ export default function MyLearningPage() {
                     <p style={{ fontFamily: "var(--font-body)", fontSize: "0.75rem", color: "var(--color-on-surface-variant)", margin: 0 }}>{m.sub}</p>
                   </div>
                   <div style={{ width: "2.75rem", height: "2.75rem", borderRadius: "0.75rem", backgroundColor: m.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                    <span className="material-symbols-outlined" style={{ fontSize: "1.5rem", color: m.iconColor }}>{m.icon}</span>
+                    {m.iconNode}
                   </div>
                 </div>
               ))}
@@ -164,7 +165,7 @@ export default function MyLearningPage() {
           {/* Loading indicator when fetching from Supabase */}
           {sbLoading && (
             <div style={{ textAlign: "center", padding: "2rem", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-body)", fontSize: "0.875rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
-              <span className="material-symbols-outlined" style={{ fontSize: "1.25rem", animation: "spin 1s linear infinite" }}>hourglass_empty</span>
+              <Loader2 size={20} />
               Loading your sessions from Supabase…
             </div>
           )}
@@ -181,7 +182,7 @@ export default function MyLearningPage() {
                   onMouseEnter={(e) => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-surface-container)"; }}
                   onMouseLeave={(e) => { if (!isActive) (e.currentTarget as HTMLButtonElement).style.backgroundColor = "transparent"; }}
                 >
-                  <span className="material-symbols-outlined" style={{ fontSize: "1.2rem" }}>{tab.icon}</span>
+                  {tab.iconNode}
                   {tab.label}
                   <span style={{ padding: "0.125rem 0.5rem", borderRadius: "9999px", backgroundColor: isActive ? "rgba(255,255,255,0.25)" : "var(--color-surface-container)", color: isActive ? "white" : "var(--color-on-surface-variant)", fontSize: "0.75rem", fontWeight: 700 }}>{tab.count}</span>
                 </button>
@@ -193,7 +194,7 @@ export default function MyLearningPage() {
           {activeTab === "lessons" && (
             <>
               {unlockedLessons.length === 0 ? (
-                <EmptyState icon="play_circle" title="No lessons yet" sub="Browse the explore feed and unlock your first 1,000 RWF micro-lesson." cta="Explore Lessons →" href="/" />
+                <EmptyState icon={<PlayCircle size={48} color="var(--color-outline)" />} title="No lessons yet" sub="Browse the explore feed and unlock your first 1,000 RWF micro-lesson." cta="Explore Lessons →" href="/" />
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
                   {unlockedLessons.map(({ purchase, lesson }) => (
@@ -205,7 +206,7 @@ export default function MyLearningPage() {
                           <img src={lesson!.thumbnail} alt={lesson!.thumbnailAlt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
                           <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: "3rem", color: "var(--color-outline)" }}>play_circle</span>
+                            <PlayCircle size={48} color="var(--color-outline)" />
                           </div>
                         )}
                         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(17,28,45,0.7) 0%, transparent 50%)" }} />
@@ -214,12 +215,12 @@ export default function MyLearningPage() {
                         </div>
                         <div style={{ position: "absolute", top: "0.75rem", right: "0.75rem" }}>
                           <span style={{ padding: "0.25rem 0.625rem", borderRadius: "0.375rem", backgroundColor: "var(--color-secondary)", color: "var(--color-on-secondary)", fontFamily: "var(--font-label)", fontSize: "0.6875rem", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                            <span className="material-symbols-outlined" style={{ fontSize: "0.875rem" }}>lock_open</span>
+                            <Unlock size={11} />
                             Unlocked
                           </span>
                         </div>
                         <div style={{ position: "absolute", bottom: "0.75rem", right: "0.75rem", padding: "0.125rem 0.5rem", borderRadius: "0.375rem", backgroundColor: "rgba(17,28,45,0.8)", color: "white", fontFamily: "var(--font-label)", fontSize: "0.6875rem", display: "flex", alignItems: "center", gap: "0.25rem" }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: "0.875rem" }}>schedule</span>
+                          <Clock size={11} />
                           {lesson!.duration}
                         </div>
                       </div>
@@ -237,7 +238,7 @@ export default function MyLearningPage() {
                           </div>
                         </div>
                         <Link href={`/lesson/${lesson!.id}`} style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "0.375rem", padding: "0.5rem", borderRadius: "0.75rem", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 600, textDecoration: "none" }}>
-                          <span className="material-symbols-outlined" style={{ fontSize: "1.1rem" }}>play_circle</span>
+                          <PlayCircle size={18} />
                           Watch Lesson
                         </Link>
                       </div>
@@ -254,7 +255,7 @@ export default function MyLearningPage() {
               {/* Escrow banner */}
               <div style={{ background: "linear-gradient(to right, rgba(0,108,73,0.08), rgba(108,248,187,0.15), var(--color-surface-container-high))", padding: "1rem", borderRadius: "1rem", display: "flex", alignItems: "flex-start", gap: "0.75rem", marginBottom: "1.5rem" }}>
                 <div style={{ width: "2.5rem", height: "2.5rem", borderRadius: "0.75rem", backgroundColor: "var(--color-secondary)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <span className="material-symbols-outlined" style={{ color: "var(--color-on-secondary)", fontSize: "1.4rem" }}>gavel</span>
+                  <Scale size={22} color="var(--color-on-secondary)" />
                 </div>
                 <div>
                   <h4 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.25rem" }}>AMANOTA Student Escrow Vault</h4>
@@ -265,7 +266,7 @@ export default function MyLearningPage() {
               </div>
 
               {upcomingBookings.length === 0 ? (
-                <EmptyState icon="event_upcoming" title="No upcoming sessions" sub="Book a live or in-person tutoring session from any lesson page." cta="Explore Lessons →" href="/" />
+                <EmptyState icon={<CalendarDays size={48} color="var(--color-outline)" />} title="No upcoming sessions" sub="Book a live or in-person tutoring session from any lesson page." cta="Explore Lessons →" href="/" />
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                   {upcomingBookings.map((booking) => {
@@ -303,7 +304,7 @@ export default function MyLearningPage() {
                             <h3 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.75rem" }}>{lessonTitle}</h3>
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
                               <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-                                <span className="material-symbols-outlined" style={{ color: "var(--color-primary)", fontSize: "1.1rem", marginTop: "0.125rem" }}>schedule</span>
+                                <Clock size={18} color="var(--color-primary)" style={{ marginTop: "0.125rem" }} />
                                 <div>
                                   <p style={{ fontFamily: "var(--font-label)", fontSize: "0.65rem", fontWeight: 700, color: "var(--color-on-surface-variant)", textTransform: "uppercase", margin: "0 0 0.125rem" }}>Date &amp; Time</p>
                                   <p style={{ fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.125rem" }}>{scheduledDate}</p>
@@ -311,7 +312,7 @@ export default function MyLearningPage() {
                                 </div>
                               </div>
                               <div style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem" }}>
-                                <span className="material-symbols-outlined" style={{ color: "var(--color-secondary)", fontSize: "1.1rem", marginTop: "0.125rem" }}>location_on</span>
+                                <MapPin size={18} color="var(--color-secondary)" style={{ marginTop: "0.125rem" }} />
                                 <div>
                                   <p style={{ fontFamily: "var(--font-label)", fontSize: "0.65rem", fontWeight: 700, color: "var(--color-on-surface-variant)", textTransform: "uppercase", margin: "0 0 0.125rem" }}>Location</p>
                                   <p style={{ fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0 }}>{location}</p>
@@ -325,7 +326,7 @@ export default function MyLearningPage() {
                             onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-on-secondary-container)"; }}
                             onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.backgroundColor = "var(--color-secondary)"; }}
                           >
-                            <span className="material-symbols-outlined" style={{ fontSize: "1.1rem" }}>done_all</span>
+                            <CheckCircle2 size={18} />
                             Mark Session Completed
                           </button>
                         </div>
@@ -341,7 +342,7 @@ export default function MyLearningPage() {
           {activeTab === "past" && (
             <>
               {pastBookings.length === 0 ? (
-                <EmptyState icon="history_edu" title="No past sessions yet" sub="Completed sessions will appear here after you mark them done." cta="See upcoming sessions" href="#" onClick={() => setActiveTab("upcoming")} />
+                <EmptyState icon={<History size={48} color="var(--color-outline)" />} title="No past sessions yet" sub="Completed sessions will appear here after you mark them done." cta="See upcoming sessions" href="#" onClick={() => setActiveTab("upcoming")} />
               ) : (
                 <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                   <table style={{ width: "100%", borderCollapse: "collapse", fontFamily: "var(--font-body)", fontSize: "0.875rem" }}>
@@ -369,7 +370,7 @@ export default function MyLearningPage() {
                             <td style={{ padding: "0.75rem 1rem", color: "var(--color-on-surface-variant)" }}>{loc}</td>
                             <td style={{ padding: "0.75rem 1rem" }}>
                               <span style={{ padding: "0.25rem 0.625rem", borderRadius: "9999px", backgroundColor: "var(--color-secondary-container)", color: "var(--color-on-secondary-container)", fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
-                                <span className="material-symbols-outlined" style={{ fontSize: "0.875rem" }}>check_circle</span>
+                                <CheckCircle2 size={12} />
                                 Completed
                               </span>
                             </td>
@@ -392,16 +393,16 @@ export default function MyLearningPage() {
 // ── Empty state helper ────────────────────────────────────────────────────────
 
 function EmptyState({ icon, title, sub, cta, href, onClick }: {
-  icon: string; title: string; sub: string; cta: string; href: string; onClick?: () => void;
+  icon: React.ReactNode; title: string; sub: string; cta: string; href: string; onClick?: () => void;
 }) {
   return (
     <div style={{ textAlign: "center", padding: "5rem 2rem", backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
-      <span className="material-symbols-outlined" style={{ fontSize: "3rem", color: "var(--color-outline)", display: "block", marginBottom: "1rem" }}>{icon}</span>
+      <div style={{ display: "block", marginBottom: "1rem" }}>{icon}</div>
       <h3 style={{ fontFamily: "var(--font-headline)", fontSize: "1.25rem", fontWeight: 600, color: "var(--color-on-surface)", margin: "0 0 0.5rem" }}>{title}</h3>
       <p style={{ fontFamily: "var(--font-body)", fontSize: "0.9rem", color: "var(--color-on-surface-variant)", maxWidth: "24rem", margin: "0 auto 1.5rem" }}>{sub}</p>
       <Link href={href} onClick={onClick} style={{ display: "inline-flex", alignItems: "center", gap: "0.375rem", padding: "0.625rem 1.5rem", borderRadius: "0.75rem", backgroundColor: "var(--color-primary)", color: "var(--color-on-primary)", fontFamily: "var(--font-label)", fontWeight: 600, textDecoration: "none" }}>
         {cta}
-        <span className="material-symbols-outlined" style={{ fontSize: "1rem" }}>arrow_forward</span>
+        <ArrowRight size={16} />
       </Link>
     </div>
   );
