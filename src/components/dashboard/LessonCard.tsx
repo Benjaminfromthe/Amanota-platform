@@ -2,6 +2,7 @@
 
 import { Clock, PlayCircle, RotateCcw, Download, FileDown, CheckCircle2 } from "lucide-react";
 import { Lesson } from "@/lib/data";
+import LessonPlaceholder from "@/components/ui/LessonPlaceholder";
 
 interface Props { lesson: Lesson }
 
@@ -25,13 +26,11 @@ export default function LessonCard({ lesson }: Props) {
     >
       {/* Thumbnail */}
       <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", overflow: "hidden", backgroundColor: "var(--color-surface-container-highest)", flexShrink: 0 }}>
-        {lesson.thumbnail && lesson.thumbnail !== "/placeholder.svg" ? (
+        {lesson.thumbnail ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={lesson.thumbnail} alt={lesson.thumbnailAlt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         ) : (
-          <div style={{ width: "100%", height: "100%", background: "linear-gradient(135deg, var(--color-surface-container-high), var(--color-surface-container-highest))", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontFamily: "var(--font-headline)", fontSize: "1.5rem", fontWeight: 700, color: "var(--color-outline)", opacity: 0.4 }}>{lesson.courseCode}</span>
-          </div>
+          <LessonPlaceholder courseCode={lesson.courseCode} title={lesson.title} />
         )}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(17,28,45,0.65) 0%, transparent 55%)" }} />
 

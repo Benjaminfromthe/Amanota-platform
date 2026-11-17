@@ -7,6 +7,7 @@ import Footer from "@/components/layout/Footer";
 import { useApp } from "@/context/AppContext";
 import { getSupabaseClient } from "@/lib/supabase";
 import { getBookingsByStudent } from "@/lib/db";
+import LessonPlaceholder from "@/components/ui/LessonPlaceholder";
 import type { BookingStatus, TierType } from "@/lib/database.types";
 import { ShieldCheck, GraduationCap, CheckCircle2, Compass, PlusCircle, Monitor, Users, Wallet, History, Loader2, BookOpen, CalendarDays, Unlock, Clock, PlayCircle, Scale, MapPin, ArrowRight } from "lucide-react";
 
@@ -201,13 +202,11 @@ export default function MyLearningPage() {
                     <div key={purchase.id} style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                       {/* Thumbnail */}
                       <div style={{ position: "relative", width: "100%", aspectRatio: "16/9", backgroundColor: "var(--color-surface-container-highest)", overflow: "hidden" }}>
-                        {lesson!.thumbnail && lesson!.thumbnail !== "/placeholder.svg" ? (
+                        {lesson!.thumbnail ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img src={lesson!.thumbnail} alt={lesson!.thumbnailAlt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                         ) : (
-                          <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            <PlayCircle size={48} color="var(--color-outline)" />
-                          </div>
+                          <LessonPlaceholder courseCode={lesson!.courseCode} title={lesson!.title} />
                         )}
                         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(17,28,45,0.7) 0%, transparent 50%)" }} />
                         <div style={{ position: "absolute", top: "0.75rem", left: "0.75rem" }}>

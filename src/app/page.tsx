@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import ExploreLessonCard from "@/components/explore/ExploreLessonCard";
-import { useApp } from "@/context/AppContext";
+import { useLessons } from "@/hooks/useLessons";
 import type { Campus, Faculty } from "@/context/AppContext";
 import { Monitor, Video, Building2, MapPin, ShieldCheck, GraduationCap } from "lucide-react";
 
@@ -27,7 +27,7 @@ const TIERS = [
 ];
 
 export default function ExplorePage() {
-  const { lessons } = useApp();
+  const { lessons, loading, fromDb } = useLessons();
   const [campusFilter, setCampusFilter]   = useState<"all" | Exclude<Campus, "both">>("all");
   const [facultyFilter, setFacultyFilter] = useState<"all" | Faculty>("all");
 
@@ -160,8 +160,10 @@ export default function ExplorePage() {
               })}
             </div>
 
-            <span style={{ marginLeft: "auto", fontFamily: "var(--font-label)", fontSize: "0.775rem", fontWeight: 600, color: "var(--color-on-surface-variant)", whiteSpace: "nowrap" }}>
+            <span style={{ marginLeft: "auto", fontFamily: "var(--font-label)", fontSize: "0.775rem", fontWeight: 600, color: "var(--color-on-surface-variant)", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+              {loading && <span style={{ width: "12px", height: "12px", borderRadius: "50%", border: "2px solid var(--color-primary)", borderTopColor: "transparent", animation: "spin 0.8s linear infinite", display: "inline-block" }} />}
               {filtered.length} lesson{filtered.length !== 1 ? "s" : ""}
+              {fromDb && <span style={{ padding: "0.125rem 0.5rem", borderRadius: "9999px", backgroundColor: "rgba(0,108,73,0.1)", color: "var(--color-secondary)", fontFamily: "var(--font-label)", fontSize: "0.65rem", fontWeight: 700 }}>Live</span>}
             </span>
           </div>
         </div>

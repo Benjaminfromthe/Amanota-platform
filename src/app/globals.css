@@ -125,3 +125,8 @@ body {
 
 /* aspect-video helper */
 .aspect-video { aspect-ratio: 16 / 9; }
+
+/* ─── Loading spinner keyframe ─────────────────────────────────────────────── */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

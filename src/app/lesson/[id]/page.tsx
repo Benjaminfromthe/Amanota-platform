@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import OnboardingModal from "@/components/auth/OnboardingModal";
+import LessonPlaceholder from "@/components/ui/LessonPlaceholder";
 import { useApp } from "@/context/AppContext";
+import { useLessons } from "@/hooks/useLessons";
 import { uiTierToDb } from "@/lib/db";
 import type { Tier } from "@/context/AppContext";
 import { ChevronRight, PlayCircle, Building2, Monitor, Video, MapPin, Shield, X, Lock, ArrowRight, CheckCircle2, SearchX, Banknote, Phone } from "lucide-react";
@@ -188,11 +190,12 @@ function PaymentModal({ lessonTitle, tierLabel, price, onConfirm, onClose }: Pay
 
 export default function LessonPage() {
   const params = useParams();
-  const router = useRouter();
   const { lessons, purchases, purchaseLesson, currentUser, supabaseUserId } = useApp();
+  const { lessons: dbLessons } = useLessons();
 
   const lessonId = typeof params.id === "string" ? params.id : params.id?.[0] ?? "";
-  const lesson = lessons.find((l) => l.id === lessonId);
+  // Prefer DB lesson (which may have a real video_url/thumbnail), fall back to seed
+  const lesson = dbLessons.find((l) => l.id === lessonId) ?? lessons.find((l) => l.id === lessonId);
 
   const [activeTab, setActiveTab] = useState<"about" | "syllabus">("about");
   const [selectedTier, setSelectedTier] = useState<Tier>("recorded");
@@ -298,10 +301,14 @@ export default function LessonPage() {
             {/* ── LEFT: Video + details ───────────────────────────────────── */}
             <div>
               {/* Video player placeholder */}
-              <div style={{ width: "100%", aspectRatio: "16/9", borderRadius: "1rem", backgroundColor: "var(--color-inverse-surface)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", marginBottom: "1.5rem", boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
-                {lesson.thumbnail && lesson.thumbnail !== "/placeholder.svg" && (
+              <div style={{ width: "100%", aspectRatio: "16/9", borderRadius: "1rem", backgroundColor: "#1e1b4b", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden", marginBottom: "1.5rem", boxShadow: "0 8px 32px rgba(0,0,0,0.18)" }}>
+                {lesson.thumbnail ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={lesson.thumbnail} alt={lesson.thumbnailAlt} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
+                  <img src={lesson.thumbnail} alt={lesson.title} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
+                ) : (
+                  <div style={{ position: "absolute", inset: 0 }}>
+                    <LessonPlaceholder courseCode={lesson.courseCode} facultyKey={lesson.facultyKey} title={lesson.title} style={{ opacity: 0.6 }} />
+                  </div>
                 )}
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
                   <button style={{ width: "5rem", height: "5rem", borderRadius: "9999px", backgroundColor: "rgba(79,70,229,0.92)", border: "3px solid rgba(255,255,255,0.3)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 1rem", backdropFilter: "blur(8px)" }}>
