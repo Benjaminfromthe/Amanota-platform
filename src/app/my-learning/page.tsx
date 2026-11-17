@@ -5,11 +5,18 @@ import Link from "next/link";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { getSupabaseClient } from "@/lib/supabase";
-import { getBookingsByStudent } from "@/lib/db";
+import { getBookingsByStudent, updateBookingStatus } from "@/lib/db";
 import LessonPlaceholder from "@/components/ui/LessonPlaceholder";
+import {
+  ShieldCheck, GraduationCap, CheckCircle2, Compass, PlusCircle,
+  Monitor, Users, Wallet, TrendingUp, History, Loader2,
+  BookOpen, CalendarDays, Unlock, Clock, PlayCircle,
+  Scale, MapPin, Calendar, SlidersHorizontal, ArrowRight,
+} from "lucide-react";
 import type { BookingStatus, TierType } from "@/lib/database.types";
-import { ShieldCheck, GraduationCap, CheckCircle2, Compass, PlusCircle, Monitor, Users, Wallet, History, Loader2, BookOpen, CalendarDays, Unlock, Clock, PlayCircle, Scale, MapPin, ArrowRight } from "lucide-react";
 
 type Tab = "lessons" | "upcoming" | "past";
 
@@ -34,6 +41,7 @@ function formatDate(iso: string) {
 }
 
 export default function MyLearningPage() {
+  const { ready } = useAuthGuard();
   const { lessons, purchases, bookings, currentUser, markBookingCompleted, supabaseUserId } = useApp();
   const [activeTab, setActiveTab] = useState<Tab>("lessons");
 
@@ -52,16 +60,13 @@ export default function MyLearningPage() {
   }, [supabaseUserId]);
 
   const handleMarkCompleted = async (bookingId: string) => {
-    // Update Supabase
     if (supabaseUserId) {
       try {
         const sb = getSupabaseClient();
-        const { updateBookingStatus } = await import("@/lib/db");
         await updateBookingStatus(sb, bookingId, "completed");
         setSbBookings((prev) => prev ? prev.map((b) => b.id === bookingId ? { ...b, status: "completed" as BookingStatus } : b) : prev);
       } catch (err) { console.error("Supabase updateBookingStatus:", err); }
     }
-    // Always update local context
     markBookingCompleted(bookingId);
   };
 
@@ -80,6 +85,17 @@ export default function MyLearningPage() {
     : bookings.filter((b) => b.userId === currentUser.id && b.status === "completed");
 
   const totalSpent = purchases.filter((p) => p.userId === currentUser.id).reduce((s, p) => s + p.pricePaid, 0);
+
+  if (!ready) {
+    return (
+      <>
+        <Header />
+        <main style={{ paddingTop: "64px", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Loader2 size={32} color="var(--color-primary)" style={{ animation: "spin 1s linear infinite" }} />
+        </main>
+      </>
+    );
+  }
 
   const tabs: { id: Tab; label: string; iconNode: React.ReactNode; count: number }[] = [
     { id: "lessons",  label: "Unlocked Lessons",         iconNode: <BookOpen size={20} />,    count: unlockedLessons.length },

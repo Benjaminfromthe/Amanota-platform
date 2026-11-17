@@ -5,9 +5,12 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import OnboardingModal from "@/components/auth/OnboardingModal";
 import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AuthContext";
+import { useAuthGuard } from "@/hooks/useAuthGuard";
 import { getSupabaseClient } from "@/lib/supabase";
 import { insertLesson, getLessonsByCreator, getWalletTransactions, getWallet } from "@/lib/db";
 import type { Campus, Faculty, Tier } from "@/context/AppContext";
+import { Loader2 } from "lucide-react";
 import { Upload, AlertCircle, CheckCircle2, Library, Receipt, Wallet, Info } from "lucide-react";
 
 const FACULTIES: Faculty[] = [
@@ -30,7 +33,19 @@ function formatDate(iso: string) {
 }
 
 export default function CreatorPage() {
+  const { ready } = useAuthGuard();
   const { walletTransactions, creatorLessons, uploadLesson, getTutorWalletBalance, getPlatformRevenue, lessons, currentUser, supabaseUserId } = useApp();
+
+  if (!ready) {
+    return (
+      <>
+        <Header />
+        <main style={{ paddingTop: "64px", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Loader2 size={32} color="var(--color-primary)" style={{ animation: "spin 1s linear infinite" }} />
+        </main>
+      </>
+    );
+  }
 
   const [title, setTitle]               = useState("");
   const [courseCode, setCourseCode]     = useState("");
