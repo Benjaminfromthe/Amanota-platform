@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState } from "react";
 import Header from "@/components/layout/Header";
@@ -40,7 +40,7 @@ export default function CreatorPage() {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: "64px", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Loader2 size={32} color="var(--color-primary)" style={{ animation: "spin 1s linear infinite" }} />
         </main>
       </>
@@ -109,7 +109,7 @@ export default function CreatorPage() {
     // Always update local context state too
     uploadLesson({ title, courseCode, faculty, campus, videoUrl, description, tiers: selectedTiers, tutorId: supabaseUserId ?? MOCK_TUTOR_ID });
     setTitle(""); setCourseCode(""); setVideoUrl(""); setDescription(""); setSelectedTiers(["recorded"]);
-    setToast("Lesson published successfully! 🎉");
+    setToast("Lesson published successfully! ðŸŽ‰");
     setTimeout(() => setToast(""), 4000);
   };
 
@@ -121,7 +121,7 @@ export default function CreatorPage() {
   return (
     <>
       <Header />
-      <main style={{ width: "100%", paddingTop: "5rem", minHeight: "100vh", backgroundColor: "var(--color-surface)" }}>
+      <main style={{ width: "100%", minHeight: "100vh", backgroundColor: "var(--color-surface)" }}>
 
         {/* Toast */}
         {toast && (
@@ -141,7 +141,7 @@ export default function CreatorPage() {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: "2rem", alignItems: "start" }}>
 
-            {/* ── LEFT: Upload form ──────────────────────────────────────── */}
+            {/* â”€â”€ LEFT: Upload form â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <div>
               <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", padding: "1.75rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", marginBottom: "1.5rem" }}>
                 <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1.1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 1.25rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -183,7 +183,7 @@ export default function CreatorPage() {
                   {/* Video URL */}
                   <label style={{ display: "block" }}>
                     <span style={labelStyle}>Video URL or File Path *</span>
-                    <input type="text" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://drive.google.com/… or /uploads/lesson.mp4" style={inputStyle} required />
+                    <input type="text" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://drive.google.com/â€¦ or /uploads/lesson.mp4" style={inputStyle} required />
                   </label>
 
                   {/* Description */}
@@ -238,7 +238,7 @@ export default function CreatorPage() {
                             <td style={tdStyle}><span style={{ padding: "0.125rem 0.5rem", borderRadius: "0.25rem", backgroundColor: "var(--color-primary-fixed)", color: "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 700 }}>{"course_code" in cl ? cl.course_code : cl.courseCode}</span></td>
                             <td style={tdStyle}>{cl.faculty}</td>
                             <td style={{ ...tdStyle, textTransform: "capitalize" }}>{cl.campus}</td>
-                            <td style={tdStyle}>{"tiers" in cl && Array.isArray(cl.tiers) ? cl.tiers.join(", ") : "—"}</td>
+                            <td style={tdStyle}>{"tiers" in cl && Array.isArray(cl.tiers) ? cl.tiers.join(", ") : "â€”"}</td>
                             <td style={tdStyle}>{formatDate("created_at" in cl ? cl.created_at : cl.uploadedAt)}</td>
                           </tr>
                         ))}
@@ -249,7 +249,7 @@ export default function CreatorPage() {
               )}
             </div>
 
-            {/* ── RIGHT: Wallet dashboard ────────────────────────────────── */}
+            {/* â”€â”€ RIGHT: Wallet dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
             <div style={{ position: "sticky", top: "6rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
 
               {/* Balance cards */}
@@ -344,7 +344,7 @@ export default function CreatorPage() {
   );
 }
 
-// ── Style helpers ─────────────────────────────────────────────────────────────
+// â”€â”€ Style helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const labelStyle: React.CSSProperties = {
   display: "block",
@@ -375,3 +375,4 @@ const tdStyle: React.CSSProperties = {
   color: "var(--color-on-surface)",
   verticalAlign: "middle",
 };
+

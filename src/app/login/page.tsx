@@ -16,7 +16,16 @@ const inp: React.CSSProperties = {
   backgroundColor: "white",
   fontFamily: "var(--font-body)", fontSize: "0.9375rem",
   color: "var(--color-on-surface)", outline: "none",
-  boxSizing: "border-box", transition: "border-color 0.15s",
+  boxSizing: "border-box", transition: "border-color 0.15s, box-shadow 0.15s",
+};
+
+const focusHandler = (e: React.FocusEvent<HTMLInputElement>) => {
+  e.target.style.borderColor = "var(--color-primary)";
+  e.target.style.boxShadow   = "0 0 0 3px rgba(53,37,205,0.12)";
+};
+const blurHandler = (e: React.FocusEvent<HTMLInputElement>) => {
+  e.target.style.borderColor = "var(--color-outline-variant)";
+  e.target.style.boxShadow   = "none";
 };
 
 function Label({ text }: { text: string }) {
@@ -51,23 +60,22 @@ function LoginForm() {
     setLoading(false);
 
     if (signInError) {
-      // Provide friendly messages for common Supabase errors
       if (signInError.includes("Invalid login credentials")) {
         setError("Incorrect email or password. Try again, or create an account.");
       } else if (signInError.includes("Email not confirmed")) {
-        setError("Please confirm your email first — check your inbox.");
+        setError("Please confirm your email first — check your inbox for the confirmation link.");
       } else {
         setError(signInError);
       }
       return;
     }
 
-    router.push(returnUrl);
+    router.replace(returnUrl);
     router.refresh();
   };
 
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--color-surface-container-low)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--color-surface-container-low)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem", marginTop: "-64px" }}>
       <div style={{ width: "100%", maxWidth: "26rem" }}>
 
         {/* Logo */}
@@ -82,7 +90,7 @@ function LoginForm() {
         </Link>
 
         {/* Card */}
-        <div style={{ backgroundColor: "white", borderRadius: "1rem", border: "1px solid var(--color-outline-variant)", boxShadow: "0 4px 24px rgba(30,41,59,0.08)" }}>
+        <div style={{ backgroundColor: "white", borderRadius: "1rem", border: "1px solid var(--color-outline-variant)", boxShadow: "0 4px 24px rgba(30,41,59,0.08)", animation: "fadeIn 0.2s ease-out both" }}>
           <div style={{ padding: "1.5rem 1.75rem 0" }}>
             <h1 style={{ fontFamily: "var(--font-headline)", fontSize: "1.375rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.25rem" }}>Welcome back</h1>
             <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--color-on-surface-variant)", margin: "0 0 1.375rem" }}>
@@ -98,8 +106,7 @@ function LoginForm() {
                 <input type="email" value={email} autoComplete="email"
                   onChange={(e) => { setEmail(e.target.value); setError(""); }}
                   placeholder="yourname@gmail.com" style={inp}
-                  onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "var(--color-primary)"; }}
-                  onBlur={(e)  => { (e.target as HTMLInputElement).style.borderColor = "var(--color-outline-variant)"; }}
+                  onFocus={focusHandler} onBlur={blurHandler}
                 />
               </div>
 
@@ -113,8 +120,7 @@ function LoginForm() {
                     onChange={(e) => { setPassword(e.target.value); setError(""); }}
                     placeholder="Your password"
                     style={{ ...inp, paddingRight: "2.75rem" }}
-                    onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "var(--color-primary)"; }}
-                    onBlur={(e)  => { (e.target as HTMLInputElement).style.borderColor = "var(--color-outline-variant)"; }}
+                    onFocus={focusHandler} onBlur={blurHandler}
                   />
                   <button type="button" onClick={() => setShowPw(!showPw)}
                     style={{ position: "absolute", right: "0.75rem", top: "50%", transform: "translateY(-50%)", border: "none", background: "transparent", cursor: "pointer", color: "var(--color-outline)", display: "flex", alignItems: "center" }}>

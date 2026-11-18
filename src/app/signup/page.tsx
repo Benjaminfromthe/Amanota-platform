@@ -35,10 +35,14 @@ const inp: React.CSSProperties = {
   backgroundColor: "white",
   fontFamily: "var(--font-body)", fontSize: "0.9375rem",
   color: "var(--color-on-surface)", outline: "none",
-  boxSizing: "border-box", transition: "border-color 0.15s",
+  boxSizing: "border-box", transition: "border-color 0.15s, box-shadow 0.15s",
 };
 
-const inpError: React.CSSProperties = { ...inp, borderColor: "var(--color-error)" };
+const inpError: React.CSSProperties = {
+  ...inp,
+  borderColor: "var(--color-error)",
+  boxShadow: "0 0 0 3px rgba(186,26,26,0.1)",
+};
 
 function FieldError({ msg }: { msg?: string }) {
   if (!msg) return null;
@@ -143,7 +147,7 @@ export default function SignupPage() {
 
   // ── Render ─────────────────────────────────────────────────────────────
   return (
-    <div style={{ minHeight: "100vh", backgroundColor: "var(--color-surface-container-low)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem" }}>
+    <div style={{ minHeight: "100vh", backgroundColor: "var(--color-surface-container-low)", display: "flex", alignItems: "center", justifyContent: "center", padding: "1.5rem", marginTop: "-64px" }}>
       <div style={{ width: "100%", maxWidth: "30rem" }}>
 
         {/* Logo */}
@@ -158,7 +162,7 @@ export default function SignupPage() {
         </Link>
 
         {/* Card */}
-        <div style={{ backgroundColor: "white", borderRadius: "1rem", border: "1px solid var(--color-outline-variant)", boxShadow: "0 4px 24px rgba(30,41,59,0.08)", overflow: "hidden" }}>
+        <div style={{ backgroundColor: "white", borderRadius: "1rem", border: "1px solid var(--color-outline-variant)", boxShadow: "0 4px 24px rgba(30,41,59,0.08)", overflow: "hidden", animation: "fadeIn 0.2s ease-out both" }}>
 
           {/* Success state */}
           {success && (
@@ -224,8 +228,8 @@ export default function SignupPage() {
                         <Label text="Email Address *" />
                         <input type="email" value={email} onChange={(e) => { setEmail(e.target.value); clearErr("email"); }}
                           placeholder="e.g. yourname@gmail.com" style={errs.email ? inpError : inp}
-                          onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "var(--color-primary)"; }}
-                          onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = errs.email ? "var(--color-error)" : "var(--color-outline-variant)"; }}
+                          onFocus={(e) => { if (!errs.email) { (e.target as HTMLInputElement).style.borderColor = "var(--color-primary)"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 3px rgba(53,37,205,0.12)"; } }}
+                          onBlur={(e)  => { (e.target as HTMLInputElement).style.borderColor = errs.email ? "var(--color-error)" : "var(--color-outline-variant)"; (e.target as HTMLInputElement).style.boxShadow = errs.email ? "0 0 0 3px rgba(186,26,26,0.1)" : "none"; }}
                         />
                         <FieldError msg={errs.email} />
                       </div>
@@ -277,7 +281,10 @@ export default function SignupPage() {
                       <div>
                         <Label text="Full Name *" />
                         <input type="text" value={name} onChange={(e) => { setName(e.target.value); clearErr("name"); }}
-                          placeholder="e.g. Benjamin Nshimiye" style={errs.name ? inpError : inp} />
+                          placeholder="e.g. Benjamin Nshimiye" style={errs.name ? inpError : inp}
+                          onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "var(--color-primary)"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 3px rgba(53,37,205,0.12)"; }}
+                          onBlur={(e)  => { (e.target as HTMLInputElement).style.borderColor = errs.name ? "var(--color-error)" : "var(--color-outline-variant)"; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
+                        />
                         <FieldError msg={errs.name} />
                       </div>
 
@@ -286,7 +293,10 @@ export default function SignupPage() {
                         <Label text="AUCA Student ID *" />
                         <input type="text" inputMode="numeric" value={studentId}
                           onChange={(e) => { setStudentId(e.target.value.replace(/\D/g, "")); clearErr("studentId"); }}
-                          placeholder="e.g. 28318" maxLength={6} style={errs.studentId ? inpError : inp} />
+                          placeholder="e.g. 28318" maxLength={6} style={errs.studentId ? inpError : inp}
+                          onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = "var(--color-primary)"; (e.target as HTMLInputElement).style.boxShadow = "0 0 0 3px rgba(53,37,205,0.12)"; }}
+                          onBlur={(e)  => { (e.target as HTMLInputElement).style.borderColor = errs.studentId ? "var(--color-error)" : "var(--color-outline-variant)"; (e.target as HTMLInputElement).style.boxShadow = "none"; }}
+                        />
                         <FieldError msg={errs.studentId} />
                       </div>
 

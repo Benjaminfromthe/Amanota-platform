@@ -103,30 +103,73 @@
 
 /* ─── Base ───────────────────────────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; }
+html {
+  margin: 0; padding: 0;
+  scroll-behavior: smooth;
+}
 body {
+  margin: 0; padding: 0;
   background-color: var(--color-background);
   color: var(--color-on-surface);
   font-family: var(--font-body);
   font-size: var(--text-body-md);
   line-height: 1.5;
   overscroll-behavior: none;
+  /* Reserve space for the fixed 64px header on every page */
+  padding-top: 64px;
 }
 
-/* Hide scrollbar globally (matches original) */
-::-webkit-scrollbar { display: none; }
-* { scrollbar-width: none; }
+/* ─── Polished custom scrollbar ──────────────────────────────────────────── */
+/* Thin, modern scrollbar — visible but unobtrusive */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--color-outline); }
 
-/* ─── Utility helpers ────────────────────────────────────────────────────── */
-.line-clamp-1 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; }
-.line-clamp-2 { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
-.no-scrollbar { scrollbar-width: none; }
-.no-scrollbar::-webkit-scrollbar { display: none; }
+/* Firefox */
+* { scrollbar-width: thin; scrollbar-color: var(--color-outline-variant) transparent; }
+
+/* Elements that explicitly need no scrollbar */
+.no-scrollbar { scrollbar-width: none !important; }
+.no-scrollbar::-webkit-scrollbar { display: none !important; }
 
 /* aspect-video helper */
 .aspect-video { aspect-ratio: 16 / 9; }
 
-/* ─── Loading spinner keyframe ─────────────────────────────────────────────── */
+/* ─── Focus ring for auth inputs ────────────────────────────────────────── */
+.auth-input:focus {
+  border-color: var(--color-primary) !important;
+  box-shadow: 0 0 0 3px rgba(53, 37, 205, 0.12);
+  outline: none;
+}
+.auth-input.error {
+  border-color: var(--color-error) !important;
+  box-shadow: 0 0 0 3px rgba(186, 26, 26, 0.1);
+}
+
+/* ─── Page transition fade-in ───────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.page-enter { animation: fadeIn 0.2s ease-out both; }
+
+/* ─── Loading spinner keyframe ─────────────────────────────────────────── */
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ─── Pulse for live indicators ─────────────────────────────────────────── */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+/* ─── Auth pages override — no header, so no top padding needed ────────── */
+/* /login and /signup are full-page standalone views */
+body:has(> #__next > .auth-page) {
+  padding-top: 0;
 }

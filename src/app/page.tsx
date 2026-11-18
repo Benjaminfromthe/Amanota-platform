@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useMemo } from "react";
 import Header from "@/components/layout/Header";
@@ -40,9 +40,9 @@ export default function ExplorePage() {
   return (
     <>
       <Header />
-      <main style={{ width: "100%", paddingTop: "64px", minHeight: "100vh", backgroundColor: "var(--color-surface-container-low)" }}>
+      <main style={{ width: "100%", minHeight: "100vh", backgroundColor: "var(--color-surface-container-low)" }}>
 
-        {/* ── Hero banner ─────────────────────────────────────────────── */}
+        {/* â”€â”€ Hero banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div style={{
           background: "linear-gradient(135deg, #1e1b4b 0%, #3525cd 55%, #4f46e5 100%)",
           padding: "2.5rem 2rem",
@@ -63,14 +63,14 @@ export default function ExplorePage() {
                 AUCA&apos;s Peer Academic Marketplace
               </h1>
               <p style={{ fontFamily: "var(--font-body)", fontSize: "1rem", color: "rgba(255,255,255,0.72)", margin: "0 0 1.25rem", lineHeight: 1.65 }}>
-                Learn from verified AUCA students — Masoro &amp; Gishushu campuses. Book recorded lessons, live sessions, campus meetups, or custom locations across Kigali.
+                Learn from verified AUCA students â€” Masoro &amp; Gishushu campuses. Book recorded lessons, live sessions, campus meetups, or custom locations across Kigali.
               </p>
               {/* Trust badges */}
               <div style={{ display: "flex", gap: "0.625rem", flexWrap: "wrap" }}>
                 {[
                   { icon: <ShieldCheck size={13} />, label: "Escrow Protected" },
                   { icon: <GraduationCap size={13} />, label: "AUCA Verified" },
-                  { icon: <span style={{ fontSize: "0.8rem" }}>📱</span>, label: "MTN MoMo & Airtel" },
+                  { icon: <span style={{ fontSize: "0.8rem" }}>ðŸ“±</span>, label: "MTN MoMo & Airtel" },
                 ].map((b) => (
                   <span key={b.label} style={{
                     display: "flex", alignItems: "center", gap: "0.375rem",
@@ -85,7 +85,7 @@ export default function ExplorePage() {
               </div>
             </div>
 
-            {/* Right — 4 tier pills */}
+            {/* Right â€” 4 tier pills */}
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.625rem", flexShrink: 0 }}>
               {TIERS.map((t) => (
                 <div key={t.label} style={{
@@ -106,7 +106,7 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        {/* ── Sticky filter bar ────────────────────────────────────────── */}
+        {/* â”€â”€ Sticky filter bar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div style={{
           position: "sticky", top: "64px", zIndex: 40,
           backgroundColor: "white",
@@ -168,7 +168,7 @@ export default function ExplorePage() {
           </div>
         </div>
 
-        {/* ── Lessons grid ─────────────────────────────────────────────── */}
+        {/* â”€â”€ Lessons grid â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "1.75rem 2rem 4rem" }}>
           {filtered.length > 0 ? (
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.25rem" }}>
@@ -192,3 +192,4 @@ export default function ExplorePage() {
     </>
   );
 }
+

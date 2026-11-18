@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -70,7 +70,7 @@ export default function MyLearningPage() {
     markBookingCompleted(bookingId);
   };
 
-  // Derive display data — prefer Supabase, fall back to context
+  // Derive display data â€” prefer Supabase, fall back to context
   const unlockedLessons = purchases
     .filter((p) => p.tier === "recorded" && p.userId === currentUser.id)
     .map((p) => ({ purchase: p, lesson: lessons.find((l) => l.id === p.lessonId) }))
@@ -90,7 +90,7 @@ export default function MyLearningPage() {
     return (
       <>
         <Header />
-        <main style={{ paddingTop: "64px", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <main style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <Loader2 size={32} color="var(--color-primary)" style={{ animation: "spin 1s linear infinite" }} />
         </main>
       </>
@@ -106,9 +106,9 @@ export default function MyLearningPage() {
   return (
     <>
       <Header />
-      <main style={{ width: "100%", paddingTop: "5rem", minHeight: "100vh", backgroundColor: "var(--color-surface)" }}>
+      <main style={{ width: "100%", minHeight: "100vh", backgroundColor: "var(--color-surface)" }}>
 
-        {/* ── Hero band ─────────────────────────────────────────────────── */}
+        {/* â”€â”€ Hero band â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div style={{ background: "linear-gradient(to bottom, rgba(222,232,255,0.4), var(--color-surface) 60%)" }}>
           <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "2rem 2rem 1.5rem" }}>
 
@@ -134,8 +134,8 @@ export default function MyLearningPage() {
                   </div>
                   <p style={{ fontFamily: "var(--font-body)", fontSize: "0.875rem", color: "var(--color-on-surface-variant)", margin: "0.25rem 0 0", display: "flex", alignItems: "center", gap: "0.375rem" }}>
                     <GraduationCap size={18} color="var(--color-outline)" />
-                    AUCA • {currentUser.campus === "masoro" ? "Masoro Campus" : "Gishushu Campus"}
-                    <span style={{ color: "var(--color-outline)" }}>•</span>
+                    AUCA â€¢ {currentUser.campus === "masoro" ? "Masoro Campus" : "Gishushu Campus"}
+                    <span style={{ color: "var(--color-outline)" }}>â€¢</span>
                     <span style={{ color: "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.75rem", fontWeight: 600 }}>{currentUser.email}</span>
                   </p>
                 </div>
@@ -176,14 +176,14 @@ export default function MyLearningPage() {
           </div>
         </div>
 
-        {/* ── Tabs ──────────────────────────────────────────────────────── */}
+        {/* â”€â”€ Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
         <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "0 2rem 4rem" }}>
 
           {/* Loading indicator when fetching from Supabase */}
           {sbLoading && (
             <div style={{ textAlign: "center", padding: "2rem", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-body)", fontSize: "0.875rem", display: "flex", alignItems: "center", justifyContent: "center", gap: "0.5rem" }}>
               <Loader2 size={20} />
-              Loading your sessions from Supabase…
+              Loading your sessions from Supabaseâ€¦
             </div>
           )}
 
@@ -207,11 +207,11 @@ export default function MyLearningPage() {
             })}
           </div>
 
-          {/* ── TAB: Unlocked Lessons ──────────────────────────────────── */}
+          {/* â”€â”€ TAB: Unlocked Lessons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {activeTab === "lessons" && (
             <>
               {unlockedLessons.length === 0 ? (
-                <EmptyState icon={<PlayCircle size={48} color="var(--color-outline)" />} title="No lessons yet" sub="Browse the explore feed and unlock your first 1,000 RWF micro-lesson." cta="Explore Lessons →" href="/" />
+                <EmptyState icon={<PlayCircle size={48} color="var(--color-outline)" />} title="No lessons yet" sub="Browse the explore feed and unlock your first 1,000 RWF micro-lesson." cta="Explore Lessons â†’" href="/" />
               ) : (
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "1.5rem" }}>
                   {unlockedLessons.map(({ purchase, lesson }) => (
@@ -264,7 +264,7 @@ export default function MyLearningPage() {
             </>
           )}
 
-          {/* ── TAB: Upcoming Sessions ─────────────────────────────────── */}
+          {/* â”€â”€ TAB: Upcoming Sessions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {activeTab === "upcoming" && (
             <>
               {/* Escrow banner */}
@@ -281,7 +281,7 @@ export default function MyLearningPage() {
               </div>
 
               {upcomingBookings.length === 0 ? (
-                <EmptyState icon={<CalendarDays size={48} color="var(--color-outline)" />} title="No upcoming sessions" sub="Book a live or in-person tutoring session from any lesson page." cta="Explore Lessons →" href="/" />
+                <EmptyState icon={<CalendarDays size={48} color="var(--color-outline)" />} title="No upcoming sessions" sub="Book a live or in-person tutoring session from any lesson page." cta="Explore Lessons â†’" href="/" />
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                   {upcomingBookings.map((booking) => {
@@ -353,7 +353,7 @@ export default function MyLearningPage() {
             </>
           )}
 
-          {/* ── TAB: Past Sessions ─────────────────────────────────────── */}
+          {/* â”€â”€ TAB: Past Sessions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {activeTab === "past" && (
             <>
               {pastBookings.length === 0 ? (
@@ -375,7 +375,7 @@ export default function MyLearningPage() {
                       const lesson = lessons.find((l) => l.id === lessonId);
                       const title = isSb ? ((b as SbBooking).lessons?.title ?? lessonId) : (lesson?.title ?? lessonId);
                       const date  = isSb ? formatDate((b as SbBooking).scheduled_at ?? "") : (b as typeof bookings[0]).scheduledDate;
-                      const loc   = isSb ? ((b as SbBooking).location ?? "—") : (b as typeof bookings[0]).location;
+                      const loc   = isSb ? ((b as SbBooking).location ?? "â€”") : (b as typeof bookings[0]).location;
                       const tier  = isSb ? (b as SbBooking).tier_type : (b as typeof bookings[0]).tier;
                         return (
                           <tr key={b.id} style={{ borderBottom: "1px solid var(--color-outline-variant)" }}>
@@ -405,7 +405,7 @@ export default function MyLearningPage() {
   );
 }
 
-// ── Empty state helper ────────────────────────────────────────────────────────
+// â”€â”€ Empty state helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 function EmptyState({ icon, title, sub, cta, href, onClick }: {
   icon: React.ReactNode; title: string; sub: string; cta: string; href: string; onClick?: () => void;
@@ -422,3 +422,4 @@ function EmptyState({ icon, title, sub, cta, href, onClick }: {
     </div>
   );
 }
+

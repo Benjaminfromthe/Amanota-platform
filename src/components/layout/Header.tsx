@@ -46,11 +46,14 @@ export default function Header() {
   return (
     <>
       <header style={{
-        position: "fixed", top: 0, width: "100%", zIndex: 50, height: "64px",
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 50, height: "64px",
         backgroundColor: "rgba(255,255,255,0.97)",
-        backdropFilter: "blur(16px)",
-        borderBottom: "1px solid var(--color-outline-variant)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid rgba(199,196,216,0.6)",
+        boxShadow: "0 1px 12px rgba(17,28,45,0.06)",
         display: "flex", alignItems: "center",
+        transition: "box-shadow 0.2s ease",
       }}>
         <div style={{ width: "100%", maxWidth: "1280px", margin: "0 auto", padding: "0 1.5rem", display: "flex", alignItems: "center", gap: "1rem" }}>
 
@@ -118,7 +121,11 @@ export default function Header() {
 
             {/* ── Auth zone ──────────────────────────────────────────── */}
             {loading ? (
-              <div style={{ width: "32px", height: "32px", borderRadius: "50%", backgroundColor: "var(--color-surface-container)", marginLeft: "0.25rem" }} />
+              /* Skeleton while session restores — prevents layout shift */
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginLeft: "0.25rem" }}>
+                <div style={{ width: "80px", height: "32px", borderRadius: "0.5rem", backgroundColor: "var(--color-surface-container)", animation: "pulse 1.5s ease-in-out infinite" }} />
+                <div style={{ width: "60px", height: "32px", borderRadius: "0.5rem", backgroundColor: "var(--color-surface-container)", animation: "pulse 1.5s ease-in-out infinite" }} />
+              </div>
             ) : isLoggedIn ? (
               /* Logged-in: avatar + name + campus badge + dropdown */
               <div style={{ position: "relative", marginLeft: "0.25rem" }}>
@@ -144,19 +151,35 @@ export default function Header() {
 
                 {/* User dropdown */}
                 {userMenuOpen && (
-                  <div style={{ position: "absolute", top: "calc(100% + 6px)", right: 0, backgroundColor: "white", borderRadius: "0.875rem", border: "1px solid var(--color-outline-variant)", boxShadow: "0 12px 32px rgba(0,0,0,0.12)", padding: "0.5rem", minWidth: "220px", zIndex: 100 }}
-                    onMouseLeave={() => setUserMenuOpen(false)}>
-                    {/* User info */}
-                    <div style={{ padding: "0.75rem 0.875rem", borderBottom: "1px solid var(--color-outline-variant)", marginBottom: "0.375rem" }}>
-                      <p style={{ fontFamily: "var(--font-label)", fontSize: "0.9rem", fontWeight: 700, color: "var(--color-on-surface)", margin: "0 0 0.125rem" }}>{displayName}</p>
-                      <p style={{ fontFamily: "var(--font-body)", fontSize: "0.775rem", color: "var(--color-on-surface-variant)", margin: "0 0 0.25rem" }}>{user?.email}</p>
-                      <span style={{ display: "inline-flex", alignItems: "center", gap: "0.1875rem", padding: "0.125rem 0.5rem", borderRadius: "9999px", backgroundColor: profile?.role === "tutor" ? "var(--color-secondary-container)" : "var(--color-primary-fixed)", color: profile?.role === "tutor" ? "var(--color-on-secondary-container)" : "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.65rem", fontWeight: 700, textTransform: "capitalize" }}>
-                        {profile?.role === "tutor" ? "Peer Tutor" : "Student"} · {campusBadge}
-                      </span>
+                  <div
+                    style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, backgroundColor: "white", borderRadius: "0.875rem", border: "1px solid var(--color-outline-variant)", boxShadow: "0 16px 40px -4px rgba(17,28,45,0.14)", padding: "0.5rem", minWidth: "236px", zIndex: 100 }}
+                    onMouseLeave={() => setUserMenuOpen(false)}
+                  >
+                    {/* User info header */}
+                    <div style={{ padding: "0.875rem 1rem", borderBottom: "1px solid var(--color-outline-variant)", marginBottom: "0.375rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "0.5rem" }}>
+                        <div style={{ width: "36px", height: "36px", borderRadius: "50%", backgroundColor: "var(--color-primary)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 700, color: "white", flexShrink: 0 }}>
+                          {displayInitials}
+                        </div>
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ fontFamily: "var(--font-label)", fontSize: "0.875rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{displayName}</p>
+                          <p style={{ fontFamily: "var(--font-body)", fontSize: "0.725rem", color: "var(--color-on-surface-variant)", margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user?.email}</p>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", gap: "0.375rem", flexWrap: "wrap" }}>
+                        {profile?.student_id && (
+                          <span style={{ padding: "0.125rem 0.5rem", borderRadius: "9999px", backgroundColor: "var(--color-surface-container)", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-label)", fontSize: "0.65rem", fontWeight: 600 }}>
+                            ID: {profile.student_id}
+                          </span>
+                        )}
+                        <span style={{ padding: "0.125rem 0.5rem", borderRadius: "9999px", backgroundColor: profile?.role === "tutor" ? "var(--color-secondary-container)" : "var(--color-primary-fixed)", color: profile?.role === "tutor" ? "var(--color-on-secondary-container)" : "var(--color-primary)", fontFamily: "var(--font-label)", fontSize: "0.65rem", fontWeight: 700, textTransform: "capitalize" }}>
+                          {profile?.role === "tutor" ? "Peer Tutor" : "Student"} · {campusBadge}
+                        </span>
+                      </div>
                     </div>
 
                     {[
-                      { icon: <BookOpen size={15} />, label: "My Learning", href: "/my-learning" },
+                      { icon: <BookOpen size={15} />, label: "My Learning",     href: "/my-learning" },
                       { icon: <Settings size={15} />,  label: "Creator Studio", href: "/creator" },
                     ].map((item) => (
                       <Link key={item.href} href={item.href} onClick={() => setUserMenuOpen(false)}

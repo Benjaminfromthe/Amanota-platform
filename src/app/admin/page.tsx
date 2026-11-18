@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
@@ -54,7 +54,7 @@ export default function AdminPage() {
     getWalletTransactions(sb).then((t) => setSbTxns(t as typeof sbTxns)).catch(() => {});
   }, []);
 
-  // Aggregate stats — prefer Supabase, fallback to context
+  // Aggregate stats â€” prefer Supabase, fallback to context
   const totalRevenue      = sbRevenue?.platformRevenue ?? getPlatformRevenue();
   const totalTutorPayout  = sbRevenue?.tutorPayouts ?? ctxTxns.reduce((s, t) => s + t.tutorCut, 0);
   const totalGMV          = sbRevenue?.gmv ?? ctxTxns.reduce((s, t) => s + t.totalAmount, 0);
@@ -65,7 +65,7 @@ export default function AdminPage() {
 
   const walletTransactions = sbTxns ?? ctxTxns;
 
-  // ── Lessons by faculty — prefer Supabase count, fallback to seeded lessons
+  // â”€â”€ Lessons by faculty â€” prefer Supabase count, fallback to seeded lessons
   const byFaculty = FACULTIES.map((fk) => {
     const seededCount  = lessons.filter((l) => l.facultyKey === fk).length;
     const sbCount      = sbFaculty?.[fk] ?? 0;
@@ -76,7 +76,7 @@ export default function AdminPage() {
 
   const maxFacultyTotal = Math.max(...byFaculty.map((f) => f.total), 1);
 
-  // ── Unique tutors ──────────────────────────────────────────────────────────
+  // â”€â”€ Unique tutors â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const uniqueTutors = [...new Set(walletTransactions.map((t) => "tutor_id" in t ? (t as { tutor_id: string | null }).tutor_id ?? "" : (t as { tutorId: string }).tutorId).filter(Boolean))];
   const tutorRows = uniqueTutors.map((tutorId) => {
     const txns = walletTransactions.filter((t) => ("tutor_id" in t ? (t as { tutor_id: string | null }).tutor_id : (t as { tutorId: string }).tutorId) === tutorId);
@@ -97,10 +97,10 @@ export default function AdminPage() {
   return (
     <>
       <Header />
-      <main style={{ width: "100%", paddingTop: "5rem", minHeight: "100vh", backgroundColor: "var(--color-surface)" }}>
+      <main style={{ width: "100%", minHeight: "100vh", backgroundColor: "var(--color-surface)" }}>
         <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "2rem" }}>
 
-          {/* ── Page header ────────────────────────────────────────────── */}
+          {/* â”€â”€ Page header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "2rem" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "0.5rem" }}>
@@ -109,7 +109,7 @@ export default function AdminPage() {
                 </div>
                 <div>
                   <h1 style={{ fontFamily: "var(--font-headline)", fontSize: "1.5rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0, letterSpacing: "-0.01em" }}>Platform Ledger</h1>
-                  <p style={{ fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 700, color: "var(--color-on-surface-variant)", margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>AMANOTA Admin · Commission & Revenue</p>
+                  <p style={{ fontFamily: "var(--font-label)", fontSize: "0.7rem", fontWeight: 700, color: "var(--color-on-surface-variant)", margin: 0, textTransform: "uppercase", letterSpacing: "0.08em" }}>AMANOTA Admin Â· Commission & Revenue</p>
                 </div>
               </div>
             </div>
@@ -125,7 +125,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* ── KPI bento ──────────────────────────────────────────────── */}
+          {/* â”€â”€ KPI bento â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
             {[
               { label: "Platform Revenue (20%)", value: `${fmt(totalRevenue)} RWF`, iconNode: <Banknote size={22} color="var(--color-primary)" />, iconBg: "var(--color-primary-fixed)", highlight: true },
@@ -150,7 +150,7 @@ export default function AdminPage() {
             ))}
           </div>
 
-          {/* ── Two-column section ─────────────────────────────────────── */}
+          {/* â”€â”€ Two-column section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem", marginBottom: "1.5rem" }}>
 
             {/* Faculty breakdown */}
@@ -165,7 +165,7 @@ export default function AdminPage() {
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.3rem" }}>
                       <span style={{ fontFamily: "var(--font-label)", fontSize: "0.8rem", fontWeight: 600, color: "var(--color-on-surface)" }}>{fk}</span>
                       <span style={{ fontFamily: "var(--font-label)", fontSize: "0.8rem", color: "var(--color-on-surface-variant)" }}>
-                        {total} lesson{total !== 1 ? "s" : ""} <span style={{ opacity: 0.6 }}>({lc} seeded · {cc} uploaded)</span>
+                        {total} lesson{total !== 1 ? "s" : ""} <span style={{ opacity: 0.6 }}>({lc} seeded Â· {cc} uploaded)</span>
                       </span>
                     </div>
                     <div style={{ height: "0.5rem", borderRadius: "9999px", backgroundColor: "var(--color-surface-container)", overflow: "hidden" }}>
@@ -221,7 +221,7 @@ export default function AdminPage() {
             </div>
           </div>
 
-          {/* ── Full transaction ledger ────────────────────────────────── */}
+          {/* â”€â”€ Full transaction ledger â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
             <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--color-outline-variant)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
               <h2 style={{ fontFamily: "var(--font-headline)", fontSize: "1rem", fontWeight: 700, color: "var(--color-on-surface)", margin: 0, display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -292,3 +292,4 @@ export default function AdminPage() {
     </>
   );
 }
+

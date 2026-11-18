@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
@@ -6,7 +6,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { ArrowLeft, RefreshCw, AlertCircle, Loader2, Banknote, Heart, Receipt, BarChart3, Layers } from "lucide-react";
 
-// ─── Types matching get_ledger_summary RPC output ────────────────────────────
+// â”€â”€â”€ Types matching get_ledger_summary RPC output â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface FacultyRow {
   faculty:           string;
@@ -52,7 +52,7 @@ function fmt(n: number) { return (n ?? 0).toLocaleString(); }
 
 function formatDate(iso: string) {
   try { return new Date(iso).toLocaleDateString("en-RW", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }); }
-  catch { return iso?.slice(0, 16) ?? "—"; }
+  catch { return iso?.slice(0, 16) ?? "â€”"; }
 }
 
 const TIER_LABELS: Record<string, string> = {
@@ -66,7 +66,7 @@ const TIER_PRICES: Record<string, number> = {
   recorded: 1000, online: 2000, campus: 3000, custom_location: 5000,
 };
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Page â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export default function AdminLedgerPage() {
   const [summary, setSummary]   = useState<LedgerSummary | null>(null);
@@ -101,10 +101,10 @@ export default function AdminLedgerPage() {
   return (
     <>
       <Header />
-      <main style={{ width: "100%", paddingTop: "5rem", minHeight: "100vh", backgroundColor: "var(--color-surface)" }}>
+      <main style={{ width: "100%", minHeight: "100vh", backgroundColor: "var(--color-surface)" }}>
         <div style={{ maxWidth: "1280px", margin: "0 auto", padding: "2rem" }}>
 
-          {/* ── Page header ────────────────────────────────────────────── */}
+          {/* â”€â”€ Page header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "2rem" }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
@@ -131,28 +131,28 @@ export default function AdminLedgerPage() {
             </button>
           </div>
 
-          {/* ── Error ──────────────────────────────────────────────────── */}
+          {/* â”€â”€ Error â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {error && (
             <div style={{ padding: "1rem 1.25rem", borderRadius: "0.75rem", backgroundColor: "var(--color-error-container)", color: "var(--color-on-error-container)", fontFamily: "var(--font-body)", fontSize: "0.9rem", marginBottom: "1.5rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <AlertCircle size={20} />
               {error}
               {error.includes("does not exist") && (
-                <span style={{ marginLeft: "0.5rem" }}>— Run <strong>run_step5_commission.sql</strong> in your Supabase SQL Editor first.</span>
+                <span style={{ marginLeft: "0.5rem" }}>â€” Run <strong>run_step5_commission.sql</strong> in your Supabase SQL Editor first.</span>
               )}
             </div>
           )}
 
-          {/* ── Loading ────────────────────────────────────────────────── */}
+          {/* â”€â”€ Loading â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
           {loading && (
             <div style={{ textAlign: "center", padding: "4rem", color: "var(--color-on-surface-variant)", fontFamily: "var(--font-body)" }}>
               <Loader2 size={40} color="var(--color-primary)" style={{ display: "block", marginBottom: "0.75rem" }} />
-              Loading ledger data…
+              Loading ledger dataâ€¦
             </div>
           )}
 
           {summary && !loading && (
             <>
-              {/* ── KPI strip ──────────────────────────────────────────── */}
+              {/* â”€â”€ KPI strip â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: "1rem", marginBottom: "2rem" }}>
                 {[
                   {
@@ -200,19 +200,19 @@ export default function AdminLedgerPage() {
                 ))}
               </div>
 
-              {/* ── Tier price reference ───────────────────────────────── */}
+              {/* â”€â”€ Tier price reference â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", padding: "1rem 1.25rem", marginBottom: "1.5rem", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", display: "flex", gap: "0.5rem", flexWrap: "wrap", alignItems: "center" }}>
                 <span style={{ fontFamily: "var(--font-label)", fontSize: "0.75rem", fontWeight: 700, color: "var(--color-on-surface-variant)", marginRight: "0.5rem" }}>BOOKING TIERS:</span>
                 {Object.entries(TIER_PRICES).map(([tier, price]) => (
                   <span key={tier} style={{ display: "flex", alignItems: "center", gap: "0.375rem", padding: "0.25rem 0.75rem", borderRadius: "9999px", backgroundColor: "var(--color-surface-container)", fontFamily: "var(--font-label)", fontSize: "0.75rem", fontWeight: 600, color: "var(--color-on-surface)" }}>
                     <span style={{ color: "var(--color-primary)" }}>{TIER_LABELS[tier]}</span>
                     <span style={{ color: "var(--color-secondary)", fontWeight: 700 }}>{fmt(price)} RWF</span>
-                    <span style={{ color: "var(--color-on-surface-variant)", fontSize: "0.65rem" }}>→ tutor {fmt(Math.round(price * 0.8))} / platform {fmt(price - Math.round(price * 0.8))}</span>
+                    <span style={{ color: "var(--color-on-surface-variant)", fontSize: "0.65rem" }}>â†’ tutor {fmt(Math.round(price * 0.8))} / platform {fmt(price - Math.round(price * 0.8))}</span>
                   </span>
                 ))}
               </div>
 
-              {/* ── Tab switcher ───────────────────────────────────────── */}
+              {/* â”€â”€ Tab switcher â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               <div style={{ display: "flex", gap: "0.375rem", backgroundColor: "var(--color-surface-container-lowest)", padding: "0.375rem", borderRadius: "0.875rem", marginBottom: "1.5rem", width: "fit-content", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
                 {(["faculty", "tier", "recent"] as const).map((t) => (
                   <button key={t} onClick={() => setTab(t)}
@@ -222,7 +222,7 @@ export default function AdminLedgerPage() {
                 ))}
               </div>
 
-              {/* ── By Faculty ─────────────────────────────────────────── */}
+              {/* â”€â”€ By Faculty â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               {tab === "faculty" && (
                 <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                   <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--color-outline-variant)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -285,7 +285,7 @@ export default function AdminLedgerPage() {
                                 <td style={{ padding: "0.75rem 1rem", color: "var(--color-secondary)", fontWeight: 700 }}>{fmt(f.tutor_rwf)}</td>
                                 <td style={{ padding: "0.75rem 1rem", color: "var(--color-primary)", fontWeight: 700 }}>{fmt(f.platform_rwf)}</td>
                                 <td style={{ padding: "0.75rem 1rem", color: "var(--color-on-surface-variant)" }}>
-                                  {f.gross_rwf > 0 ? `${Math.round((f.platform_rwf / f.gross_rwf) * 100)}%` : "—"}
+                                  {f.gross_rwf > 0 ? `${Math.round((f.platform_rwf / f.gross_rwf) * 100)}%` : "â€”"}
                                 </td>
                               </tr>
                             ))}
@@ -307,7 +307,7 @@ export default function AdminLedgerPage() {
                 </div>
               )}
 
-              {/* ── By Tier ────────────────────────────────────────────── */}
+              {/* â”€â”€ By Tier â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               {tab === "tier" && (
                 <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                   <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--color-outline-variant)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -335,7 +335,7 @@ export default function AdminLedgerPage() {
                                 </span>
                               </td>
                               <td style={{ padding: "0.75rem 1rem", fontFamily: "var(--font-label)", fontWeight: 700, color: "var(--color-on-surface)" }}>
-                                {TIER_PRICES[t.tier_type] ? `${fmt(TIER_PRICES[t.tier_type])} RWF` : "—"}
+                                {TIER_PRICES[t.tier_type] ? `${fmt(TIER_PRICES[t.tier_type])} RWF` : "â€”"}
                               </td>
                               <td style={{ padding: "0.75rem 1rem", color: "var(--color-on-surface-variant)" }}>{t.transaction_count}</td>
                               <td style={{ padding: "0.75rem 1rem", fontWeight: 600 }}>{fmt(t.gross_rwf)}</td>
@@ -359,7 +359,7 @@ export default function AdminLedgerPage() {
                 </div>
               )}
 
-              {/* ── Recent transactions ────────────────────────────────── */}
+              {/* â”€â”€ Recent transactions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */}
               {tab === "recent" && (
                 <div style={{ backgroundColor: "var(--color-surface-container-lowest)", borderRadius: "1rem", overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)" }}>
                   <div style={{ padding: "1.25rem 1.5rem", borderBottom: "1px solid var(--color-outline-variant)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -386,7 +386,7 @@ export default function AdminLedgerPage() {
                             <tr key={r.id} style={{ borderBottom: "1px solid var(--color-outline-variant)" }}>
                               <td style={{ padding: "0.625rem 0.875rem", color: "var(--color-on-surface-variant)", whiteSpace: "nowrap", fontSize: "0.775rem" }}>{formatDate(r.created_at)}</td>
                               <td style={{ padding: "0.625rem 0.875rem", maxWidth: "12rem" }}>
-                                <span className="line-clamp-1" style={{ display: "block", fontWeight: 500, color: "var(--color-on-surface)" }}>{r.lesson_title ?? "—"}</span>
+                                <span className="line-clamp-1" style={{ display: "block", fontWeight: 500, color: "var(--color-on-surface)" }}>{r.lesson_title ?? "â€”"}</span>
                                 {r.course_code && <span style={{ fontFamily: "var(--font-label)", fontSize: "0.65rem", backgroundColor: "var(--color-primary-fixed)", color: "var(--color-primary)", padding: "0.0625rem 0.375rem", borderRadius: "0.25rem", fontWeight: 700 }}>{r.course_code}</span>}
                               </td>
                               <td style={{ padding: "0.625rem 0.875rem", color: "var(--color-on-surface-variant)", whiteSpace: "nowrap", fontSize: "0.775rem" }}>{r.faculty}</td>
@@ -395,8 +395,8 @@ export default function AdminLedgerPage() {
                                   {TIER_LABELS[r.tier_type] ?? r.tier_type}
                                 </span>
                               </td>
-                              <td style={{ padding: "0.625rem 0.875rem", color: "var(--color-on-surface-variant)", fontSize: "0.775rem" }}>{r.student_name ?? "—"}</td>
-                              <td style={{ padding: "0.625rem 0.875rem", color: "var(--color-on-surface-variant)", fontSize: "0.775rem" }}>{r.tutor_name ?? "—"}</td>
+                              <td style={{ padding: "0.625rem 0.875rem", color: "var(--color-on-surface-variant)", fontSize: "0.775rem" }}>{r.student_name ?? "â€”"}</td>
+                              <td style={{ padding: "0.625rem 0.875rem", color: "var(--color-on-surface-variant)", fontSize: "0.775rem" }}>{r.tutor_name ?? "â€”"}</td>
                               <td style={{ padding: "0.625rem 0.875rem", fontWeight: 600, color: "var(--color-on-surface)" }}>{fmt(r.gross_amount)}</td>
                               <td style={{ padding: "0.625rem 0.875rem", fontWeight: 700, color: "var(--color-secondary)" }}>{fmt(r.tutor_payout)}</td>
                               <td style={{ padding: "0.625rem 0.875rem", fontWeight: 700, color: "var(--color-primary)" }}>{fmt(r.platform_fee)}</td>
@@ -425,3 +425,4 @@ function EmptyState({ msg }: { msg: string }) {
     </div>
   );
 }
+
